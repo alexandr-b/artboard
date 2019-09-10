@@ -18,7 +18,7 @@
           This test satellite will carry<input class="sample__input" type="text" value="its own piece of junk" oninput="inputLength(event)" onfocus="this.select()"/>which it will release and then attempt to retrieve.
         </div>
         <div class="sample__text sample__text_male-2">
-          A harpoon is relatively simple.
+          A harpoon is<input class="sample__input" type="text" value="relatively" oninput="inputLength(event)" onfocus="this.select()"/>simple.
         </div>
       </div>
       <hr />
@@ -30,7 +30,7 @@
     </div>
   <script>
     const inputEvent = new Event('input');
-    window.onload = document.querySelector('.sample__input').dispatchEvent(inputEvent);
+    window.onload = document.querySelectorAll('.sample__input').forEach(item => item.dispatchEvent(inputEvent));
 
     function selectSample(event) {
       const sample = event.target.parentElement;
