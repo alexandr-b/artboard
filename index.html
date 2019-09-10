@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>artboard</title>
+    <link href="./style.min.css" rel="stylesheet">
+  </head>
+  <body ontouchstart="">
+    <div class="widget">
+      <div class="sample sample_male-1 sample_default">
+        <select class="sample__select" onchange="selectSample(event)">
+          <option value="male-1" selected>Male Sample #1</option>
+          <option value="male-2">Male Sample #2</option>
+        </select>
+        <div class="sample__text sample__text_male-1">
+          This test satellite will carry<input class="sample__input" type="text" value="its own piece of junk" oninput="inputLength(event)" onfocus="this.select()"/>which it will release and then attempt to retrieve.
+        </div>
+        <div class="sample__text sample__text_male-2">
+          A harpoon is relatively simple.
+        </div>
+      </div>
+      <hr />
+      <div class="speak">
+        <label for="speak__button" class="speak__label speak__label_default">Type whatever you want in the pink section, then click “Speak it” to hear.</label>
+        <label for="speak__button" class="speak__label speak__label_modified">Restore original</label>
+        <button name="speak__button" class="speak__button" data-value="Speak It"></button>
+      </div>
+    </div>
+  <script>
+    const inputEvent = new Event('input');
+    window.onload = document.querySelector('.sample__input').dispatchEvent(inputEvent);
+
+    function selectSample(event) {
+      const sample = event.target.parentElement;
+      sample.classList.remove('sample_male-1');
+      sample.classList.remove('sample_male-2');
+      sample.classList.add('sample_' + event.target.value);
+    }
+
+    function inputLength(event) {
+      const input = event.target;
+      if (input.value.length < 1) {
+          input.style.width = 0;
+          return;
+      }
+
+      const clone = document.createElement('pre');
+      clone.classList.add('pre-input');
+      clone.innerHTML = input.value;
+      document.body.appendChild(clone);
+      input.style.width = (clone.offsetWidth / 10 + .1) + 'rem';
+      document.body.removeChild(clone);
+    }
+  </script>
+  </body>
+</html>
