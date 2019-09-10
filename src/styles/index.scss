@@ -1,0 +1,69 @@
+html {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  font-size: 10px;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+hr,
+div,
+pre,
+select,
+input,
+label,
+button {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+select {
+  &:focus:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #000;
+  }
+
+  &::-ms-expand {
+    display: none;
+  }
+
+  & option {
+    font-weight: normal;
+  }
+}
+
+input {
+  &:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+  }
+}
+
+hr {
+  width: 100%;
+  height: .1rem;
+  background-image: url('./assets/svg/dash.svg');
+  background-position: bottom left;
+  background-repeat: repeat-x;
+  background-size: 1.2rem .1rem;
+  border: 0;
+  outline: 0;
+}
+
+.pre-input {
+  padding: 0 .3rem;
+  position: absolute;
+  font-size: 2.2rem;
+  font-weight: 300;
+  line-height: 3.6rem;
+  letter-spacing: .099rem;
+  word-spacing: .04rem;
+}

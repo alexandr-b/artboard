@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="8px" height="10px" viewBox="0 0 8 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>atm/icon/drop-select</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M14.9926407,18.4675144 L17.4675144,15.9926407 L18.881728,15.9926407 L14.9926407,19.881728 L11.1035534,15.9926407 L12.517767,15.9926407 L14.9926407,18.4675144 Z M17.4675144,13.9926407 L14.9926407,11.517767 L12.517767,13.9926407 L11.1035534,13.9926407 L14.9926407,10.1035534 L18.881728,13.9926407 L17.4675144,13.9926407 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.400000006">
+        <g id="timeline-copy-19" transform="translate(-265.000000, -177.000000)">
+            <g id="Group-103" transform="translate(112.000000, 148.000000)">
+                <g id="Group-101" transform="translate(20.000000, 19.000000)">
+                    <g id="Group-102">
+                        <g id="atm/icon/drop-select" transform="translate(122.000000, 0.000000)">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <g id="mask" fill-rule="nonzero"></g>
+                            <g id="atm/mixin/fill/black-100%-solid" mask="url(#mask-2)" fill="#000000" fill-rule="evenodd">
+                                <rect id="Rectangle" x="0" y="0" width="30" height="30"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
