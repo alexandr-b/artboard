@@ -153,8 +153,12 @@
       }
     }
 
-    &_male-1 .sample__text_male-1,
-    &_male-2 .sample__text_male-2,
+    &_man-1 .sample__text_man-1,
+    &_man-2 .sample__text_man-2,
+    &_man-3 .sample__text_man-3,
+    &_woman-1 .sample__text_woman-1,
+    &_woman-2 .sample__text_woman-2,
+    &_woman-3 .sample__text_woman-3,
     &_modified + hr + .speak > .speak__label_modified,
     &_default + hr + .speak > .speak__label_default {
       display: block;
