@@ -92,7 +92,7 @@
       xhr.onload = function() {
         var sampleElement = document.querySelector('.sample');
         var selectElement = sampleElement.firstElementChild;
-        xhr.response.forEach(function (item, index) {
+        JSON.parse(xhr.response).forEach(function (item, index) {
           var text = item.text.split(item.text_to_change).map(function (part) {
             if (part !== '') { return part.trim(); }
           });
