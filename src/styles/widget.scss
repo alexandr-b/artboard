@@ -1,8 +1,82 @@
 .widget {
+  margin: 0;
+  padding: 0;
   width: 977px;
   border: 1px solid rgba(#000, .2);
   border-radius: 10px;
   box-shadow: 0 5px 8px rgba(#000, .1);
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+
+  hr,
+  div,
+  pre,
+  select,
+  input,
+  label,
+  button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+
+  select {
+    cursor: pointer;
+
+    &:focus:-moz-focusring {
+      color: transparent;
+      text-shadow: 0 0 0 #000;
+    }
+
+    &::-ms-expand {
+      display: none;
+    }
+
+    & option {
+      font-weight: normal;
+    }
+  }
+
+  input {
+    &:focus {
+      border: 0;
+      outline: 0;
+      box-shadow: none;
+    }
+  }
+
+  hr {
+    width: 100%;
+    height: 1px;
+    background-image: url('./assets/svg/dash.svg');
+    background-position: bottom left;
+    background-repeat: repeat-x;
+    background-size: 12px 1px;
+    border: 0;
+    outline: 0;
+  }
+
+  label {
+    user-select: none;
+  }
+
+  button {
+    cursor: pointer;
+    transition: transform .1s;
+
+    &:active {
+      transform: translate(.5px, .5px);
+    }
+  }
+
+  .pre-input {
+    padding: 0 4px;
+    position: absolute;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: .99px;
+    word-spacing: .4px;
+  }
 
   .sample {
     margin: 19px 19px 24px;
@@ -80,10 +154,7 @@
     }
 
     &_male-1 .sample__text_male-1,
-    &_male-2 .sample__text_male-2 {
-      display: block;
-    }
-
+    &_male-2 .sample__text_male-2,
     &_modified + hr + .speak > .speak__label_modified,
     &_default + hr + .speak > .speak__label_default {
       display: block;
