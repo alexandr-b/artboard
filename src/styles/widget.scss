@@ -213,6 +213,7 @@
 
       &:before {
         content: '';
+        position: relative;
         display: block;
         width: 30px;
         height: 30px;
@@ -226,6 +227,8 @@
         content: attr(data-value);
         margin-left: 4px;
         margin-right: 11px;
+        position: relative;
+        display: block;
         font-size: 17px;
         font-weight: 600;
         line-height: 20px;
