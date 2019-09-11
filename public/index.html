@@ -64,7 +64,6 @@
       inputEvent.initEvent('input', false, false);
 
       for (i = 0; i < inputs.length; i++) {
-        console.log(inputs[i].dataset.value);
         inputs[i].value = inputs[i].dataset.value;
         inputs[i].dispatchEvent(inputEvent);
       }
@@ -92,7 +91,13 @@
       xhr.onload = function() {
         var sampleElement = document.querySelector('.sample');
         var selectElement = sampleElement.firstElementChild;
-        JSON.parse(xhr.response).forEach(function (item, index) {
+        var response = xhr.response;
+
+        if (typeof response === "string") {
+          response = JSON.parse(response);
+        }
+
+        response.forEach(function (item, index) {
           var text = item.text.split(item.text_to_change).map(function (part) {
             if (part !== '') { return part.trim(); }
           });
