@@ -43,16 +43,16 @@
       var sample = input.parentElement.parentElement;
 
       if (
-          event.inputType !== undefined
-          && sample.classList.contains('sample_default')
+        event.inputType !== undefined
+        && sample.classList.contains('sample_default')
       ) {
-          sample.classList.remove('sample_default');
-          sample.classList.add('sample_modified');
+        sample.classList.remove('sample_default');
+        sample.classList.add('sample_modified');
       }
 
       if (input.value.length < 1) {
-          input.style.width = '0';
-          return;
+        input.style.width = '0';
+        return;
       }
 
       var clone = document.createElement('pre');
@@ -66,13 +66,14 @@
     function restoreSample() {
       var inputEvent = document.createEvent('Event');
       var sampleElement = document.querySelector('.sample');
+      var inputs = document.querySelectorAll('.sample__input');
 
       inputEvent.initEvent('input', false, false);
 
-      document.querySelectorAll('.sample__input').forEach(function (item) {
-        item.value = item.dataset.value;
-        item.dispatchEvent(inputEvent);
-      });
+      for (i = 0; i < inputs.length; i++) {
+        inputs[i].value = inputs[i].dataset.value;
+        inputs[i].dispatchEvent(inputEvent);
+      }
 
       sampleElement.classList.remove('sample_modified');
       sampleElement.classList.add('sample_default');
