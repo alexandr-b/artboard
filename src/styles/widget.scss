@@ -8,7 +8,6 @@
     margin: 19px 19px 24px;
 
     &__select {
-      padding-top: 3px;
       padding-left: 9px;
       min-width: 152px;
       height: 28px;
@@ -25,7 +24,7 @@
       font-family: inherit;
       font-size: 13px;
       font-weight: 500;
-      line-height: 15px;
+      line-height: 16px;
       letter-spacing: .06px;
       -moz-appearance: none;
       -webkit-appearance: none;
@@ -70,6 +69,10 @@
       line-height: inherit;
       letter-spacing: inherit;
       word-spacing: inherit;
+
+      &::-ms-clear {
+        display: none;
+      }
 
       &::selection {
         background-color: rgba(#00D4FF, .35);
@@ -139,6 +142,7 @@
 
       &:before {
         content: '';
+        display: block;
         width: 30px;
         height: 30px;
         background-image: url('./assets/svg/play.svg');
