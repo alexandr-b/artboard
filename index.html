@@ -69,7 +69,7 @@
 
       inputEvent.initEvent('input', false, false);
 
-      document.querySelectorAll('.sample__input').forEach((item) => {
+      document.querySelectorAll('.sample__input').forEach(function (item) {
         item.value = item.dataset.value;
         item.dispatchEvent(inputEvent);
       });
