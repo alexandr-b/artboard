@@ -42,10 +42,7 @@
       var input = event.target;
       var sample = input.parentElement.parentElement;
 
-      if (
-        event.inputType !== undefined
-        && sample.classList.contains('sample_default')
-      ) {
+      if (sample.classList.contains('sample_default')) {
         sample.classList.remove('sample_default');
         sample.classList.add('sample_modified');
       }
