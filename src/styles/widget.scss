@@ -1,32 +1,32 @@
 .widget {
-  width: 97.7rem;
+  width: 977px;
   border: 1px solid rgba(#000, .2);
-  border-radius: 1rem;
-  box-shadow: 0 .5rem .8rem rgba(#000, .1);
+  border-radius: 10px;
+  box-shadow: 0 5px 8px rgba(#000, .1);
 
   .sample {
-    margin: 1.9rem 1.9rem 2.4rem;
+    margin: 19px 19px 24px;
 
     &__select {
-      padding-top: .3rem;
-      padding-left: .95rem;
-      min-width: 15.2rem;
-      height: 2.8rem;
+      padding-top: 3px;
+      padding-left: 9px;
+      min-width: 152px;
+      height: 28px;
       background-color: #fff;
       background-image: url('./assets/svg/drop-select.svg');
       background-repeat: no-repeat;
-      background-position: right .8em center;
+      background-position: right 10px top 7px;
       background-size: auto, 100%;
       border: 1px solid rgba(#000, .15);
-      border-radius: .4em;
+      border-radius: 4px;
       outline: 0;
       box-shadow: none;
       color: #000;
       font-family: inherit;
-      font-size: 1.3rem;
+      font-size: 13px;
       font-weight: 500;
-      line-height: 1.5rem;
-      letter-spacing: .006rem;
+      line-height: 15px;
+      letter-spacing: .06px;
       -moz-appearance: none;
       -webkit-appearance: none;
       appearance: none;
@@ -41,26 +41,27 @@
     }
 
     &__text {
-      margin-top: 1.1rem;
-      margin-left: .5rem;
+      margin-top: 11px;
+      margin-left: 5px;
       display: none;
-      font-size: 2.2rem;
+      min-height: 72px;
+      font-size: 22px;
       font-weight: 300;
-      line-height: 3.6rem;
-      letter-spacing: .099rem;
-      word-spacing: .04rem;
+      line-height: 36px;
+      letter-spacing: .99px;
+      word-spacing: .4px;
     }
 
     &__input {
-      margin-left: .2rem;
-      margin-right: .3rem;
-      padding: 0 .3rem;
+      margin-left: 2px;
+      margin-right: 3px;
+      padding: 0 3px;
       display: inline;
-      min-width: .7rem;
+      min-width: 7px;
       max-width: 100%;
-      height: 3.6rem;
+      height: 36px;
       border: 0;
-      border-radius: .2rem;
+      border-radius: 2px;
       background-color: rgba(#DE2898, .10);
       color: #DE2898;
       caret-color: #DE2898;
@@ -87,44 +88,59 @@
   }
 
   .speak {
-    padding: 2rem 1.9rem;
+    padding: 20px 19px;
     display: flex;
     justify-content: flex-end;
 
     &__label {
-      margin-top: .4rem;
-      margin-right: 2.3rem;
+      margin-top: 4px;
       display: none;
-      font-size: 1.7rem;
-      line-height: 3.6rem;
-      letter-spacing: 0.04rem;
-      word-spacing: 0.01rem;
+      position: relative;
+      font-size: 17px;
+      line-height: 36px;
+      letter-spacing: .4px;
+      word-spacing: .1px;
       color: rgba(#000, .4);
 
       &_default {
+        margin-right: 23px;
         font-weight: 200;
       }
 
       &_modified {
+        margin-right: 13px;
         font-weight: 500;
+        cursor: pointer;
+
+        &:before {
+          content: '';
+          position: relative;
+          padding-right: 61px;
+          width: 30px;
+          height: 30px;
+          background-image: url('./assets/svg/wrap.svg');
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: auto;
+        }
       }
     }
 
     &__button {
-      width: 13.7rem;
-      height: 4.8rem;
+      width: 137px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #DE2898;
       border: 0;
-      border-radius: .4rem;
+      border-radius: 4px;
       outline: 0;
 
       &:before {
         content: '';
-        width: 3rem;
-        height: 3rem;
+        width: 30px;
+        height: 30px;
         background-image: url('./assets/svg/play.svg');
         background-position: center;
         background-repeat: no-repeat;
@@ -133,11 +149,12 @@
 
       &:after {
         content: attr(data-value);
-        margin-left: .4rem;
-        font-size: 1.7rem;
+        margin-left: 4px;
+        margin-right: 11px;
+        font-size: 17px;
         font-weight: 600;
-        line-height: 2rem;
-        letter-spacing: -.025em;
+        line-height: 20px;
+        letter-spacing: -.25px;
         color: #fff;
       }
     }

@@ -49,21 +49,24 @@ input {
 
 hr {
   width: 100%;
-  height: .1rem;
+  height: 1px;
   background-image: url('./assets/svg/dash.svg');
   background-position: bottom left;
   background-repeat: repeat-x;
-  background-size: 1.2rem .1rem;
+  background-size: 12px 1px;
   border: 0;
   outline: 0;
 }
 
+label {
+  user-select: none;
+}
+
 .pre-input {
-  padding: 0 .3rem;
+  padding: 0 4px;
   position: absolute;
-  font-size: 2.2rem;
+  font-size: 22px;
   font-weight: 300;
-  line-height: 3.6rem;
-  letter-spacing: .099rem;
-  word-spacing: .04rem;
+  letter-spacing: .99px;
+  word-spacing: .4px;
 }
