@@ -9,32 +9,28 @@
   </head>
   <body ontouchstart="">
     <div class="widget">
-      <div class="sample sample_male-1 sample_default">
+      <div class="sample sample_default">
         <select class="sample__select" onchange="selectSample(event)">
-          <option value="male-1" selected>Male Sample #1</option>
-          <option value="male-2">Male Sample #2</option>
         </select>
-        <div class="sample__text sample__text_male-1">
-          This test satellite will carry<input class="sample__input" type="text" data-value="its own piece of junk" oninput="inputChange(event)" onfocus="this.select()"/>which it will release and then attempt to retrieve.
-        </div>
-        <div class="sample__text sample__text_male-2">
-          A harpoon is<input class="sample__input" type="text" data-value="relatively" oninput="inputChange(event)" onfocus="this.select()"/>simple.
-        </div>
       </div>
       <hr />
       <div class="speak">
         <label for="speak__button" class="speak__label speak__label_default">Type whatever you want in the pink section, then click “Speak it” to hear.</label>
-        <label for="speak__button" class="speak__label speak__label_modified" onclick="restoreSample()">Restore original</label>
-        <button name="speak__button" class="speak__button" data-value="Speak It"></button>
+        <label for="speak__button" class="speak__label speak__label_modified" onclick="restoreSamples()">Restore original</label>
+        <button name="speak__button" class="speak__button" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
     </div>
   <script>
-    window.onload = restoreSample();
+    window.onload = generateSamples();
 
     function selectSample(event) {
       var sample = event.target.parentElement;
-      sample.classList.remove('sample_male-1');
-      sample.classList.remove('sample_male-2');
+      sample.classList.remove('sample_man-1');
+      sample.classList.remove('sample_man-2');
+      sample.classList.remove('sample_man-3');
+      sample.classList.remove('sample_woman-1');
+      sample.classList.remove('sample_woman-2');
+      sample.classList.remove('sample_woman-3');
       sample.classList.add('sample_' + event.target.value);
     }
 
@@ -60,7 +56,7 @@
       sample.parentElement.removeChild(clone);
     }
 
-    function restoreSample() {
+    function restoreSamples() {
       var inputEvent = document.createEvent('Event');
       var sampleElement = document.querySelector('.sample');
       var inputs = document.querySelectorAll('.sample__input');
@@ -68,12 +64,98 @@
       inputEvent.initEvent('input', false, false);
 
       for (i = 0; i < inputs.length; i++) {
+        console.log(inputs[i].dataset.value);
         inputs[i].value = inputs[i].dataset.value;
         inputs[i].dispatchEvent(inputEvent);
       }
 
       sampleElement.classList.remove('sample_modified');
       sampleElement.classList.add('sample_default');
+    }
+    
+    function generateSamples() {
+      /*var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+      xhr.open('GET', 'https://public.lyrebird.ai/api/public/sentences');
+      xhr.responseType = 'json';
+      xhr.send();
+
+      xhr.onload = function() {
+        console.log(xhr.response[0]);
+      };*/
+      var xhr = new XMLHttpRequest();
+      // xhr.withCredentials = true;
+      xhr.open('GET', '/sentences.json');
+      xhr.responseType = 'json';
+      xhr.send();
+
+      xhr.onload = function() {
+        var sampleElement = document.querySelector('.sample');
+        var selectElement = sampleElement.firstElementChild;
+        xhr.response.forEach(function (item, index) {
+          var text = item.text.split(item.text_to_change).map(function (part) {
+            if (part !== '') { return part.trim(); }
+          });
+
+          sampleElement.insertAdjacentElement('beforeend', createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
+          selectElement.insertAdjacentElement('beforeend', createOption(item.speaker));
+
+          if (index === 0) {
+            sampleElement.classList.add('sample_' + item.speaker.replace(' ', '-'));
+          }
+        });
+
+        restoreSamples();
+      };
+    }
+
+    function handleButtonClick(event) {
+      var widget = event.target.parentElement.parentElement;
+
+      if (widget.classList.contains('widget_generating')) {
+        return;
+      } else if (widget.classList.contains('widget_playing')) {
+        widget.classList.remove('widget_playing');
+      } else {
+        widget.classList.add('widget_generating');
+
+        setTimeout(function () {
+          widget.classList.remove('widget_generating');
+          widget.classList.add('widget_playing');
+        }, 1500);
+      }
+    }
+
+    function createSample(sampleObject) {
+      var input = document.createElement('input');
+      input.classList.add('sample__input');
+      input.addEventListener('input', inputChange);
+      input.addEventListener('focus', function (event) { event.target.select() });
+      input.type = 'text';
+      input.setAttribute('data-value', sampleObject.text_to_change);
+
+      var sampleText = document.createElement('div');
+      sampleText.classList.add('sample__text');
+      sampleText.classList.add('sample__text_' + sampleObject.speaker.replace(' ', '-'));
+      sampleText.insertAdjacentText('beforeend', sampleObject.text[0]);
+      sampleText.insertAdjacentElement('beforeend', input);
+      sampleObject.text[1] !== undefined &&
+        sampleText.insertAdjacentText('beforeend', sampleObject.text[1]);
+      return sampleText;
+    }
+
+    function createOption(optionText) {
+      var option = document.createElement('option');
+
+      option.value = optionText.replace(' ', '-');
+
+      if (optionText.match(/woman\s/)) {
+        option.insertAdjacentText('beforeend', optionText.replace(/\bwoman\s/, 'Female Sample #'));
+      } else if (optionText.match(/\bman\s/)) {
+        option.insertAdjacentText('beforeend', optionText.replace(/\bman\s/, 'Male Sample #'));
+      }
+
+      return option;
     }
   </script>
   </body>
