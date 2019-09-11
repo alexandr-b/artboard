@@ -55,9 +55,9 @@
       var clone = document.createElement('pre');
       clone.classList.add('pre-input');
       clone.innerHTML = input.value;
-      document.body.appendChild(clone);
+      sample.parentElement.appendChild(clone);
       input.style.width = clone.offsetWidth + 'px';
-      document.body.removeChild(clone);
+      sample.parentElement.removeChild(clone);
     }
 
     function restoreSample() {
