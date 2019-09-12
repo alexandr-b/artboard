@@ -19,7 +19,7 @@
         <label for="speak__button" class="speak__label speak__label_modified" onclick="restoreSamples()">Restore original</label>
         <button name="speak__button" class="speak__button" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onended="setStatus()" onerror="setStatus()"></audio>
+      <audio id="demo-audio" onended="playAudio()" onerror="playAudio()"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
@@ -109,7 +109,7 @@
 
         restoreSamples();
         setStatus();
-      };
+      }
     }
 
     function handleButtonClick() {
@@ -124,12 +124,8 @@
       if (widget.classList.contains('widget_playing')) {
         playAudio();
       } else {
+        audio.pause(); //  specially for safari
         requestAudio(id, text);
-
-        //  specially for safari
-        audio.play();
-        audio.pause();
-        audio.currentTime = 0;
       }
     }
 
@@ -202,7 +198,11 @@
 
     function playAudio(src) {
       if (src === undefined) {
-        audio.pause();
+        if (audio.src !== document.URL) {
+          audio.currentTime !== 0 && audio.pause();
+          audio.src = '';
+        }
+
         setStatus();
         return;
       }
