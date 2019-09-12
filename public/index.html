@@ -128,7 +128,7 @@
       var sampleName = sample.className.match(/_\w*-\d/)[0].replace('_', '');
       var sampleElement = document.querySelector('.sample__text_' + sampleName);
       var text = sampleElement.firstElementChild.value;
-      var id = sampleElement.dataset.id;
+      var id = sampleElement.dataset.sample;
 
       if (widget.classList.contains('widget_playing')) {
         playAudio();
