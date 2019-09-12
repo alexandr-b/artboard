@@ -76,22 +76,22 @@
     
     function generateSamples() {
       setStatus('generating');
-      /*var xhr = new XMLHttpRequest();
-      xhr.withCredentials = true;
-      xhr.open('GET', 'https://public.lyrebird.ai/api/public/sentences');
-      xhr.responseType = 'json';
-      xhr.send();*/
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', './sentences.json');
-      xhr.responseType = 'json';
-      xhr.send();
+      var get = new XMLHttpRequest();
+      get.withCredentials = true;
+      get.open('GET', 'https://public.lyrebird.ai/api/public/sentences');
+      get.responseType = 'json';
+      get.send();
+      /*var get = new XMLHttpRequest();
+      get.open('GET', './sentences.json');
+      get.responseType = 'json';
+      get.send();*/
 
-      xhr.onload = function() {
+      get.onload = function() {
         var select = sample.firstElementChild;
-        var response = xhr.response;
+        var response = get.response;
 
-        if (typeof response === "string") {
-          response = JSON.parse(response);
+        if (typeof response === "string") { // specially for chrome on win
+          response = JSON.parse(response);  // specially for ie
         }
 
         response.forEach(function (item, index) {
@@ -112,8 +112,11 @@
       }
     }
 
-    function handleButtonClick() {
-      if (widget.classList.contains('widget_generating')) {
+    function handleButtonClick(event) {
+      if (
+        event.button !== 0
+        || widget.classList.contains('widget_generating')
+      ) {
         return;
       }
 
@@ -168,18 +171,18 @@
 
     function requestAudio(id, text) {
       setStatus('generating');
-      /*var post = new XMLHttpRequest();
+      var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('POST', 'https://public.lyrebird.ai/api/public/imputation');
       post.responseType = 'json';
       post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      post.send(JSON.stringify({id: id, text: text}));*/
+      post.send(JSON.stringify({id: id, text: text}));
 
-      var post = new XMLHttpRequest();
+      /*var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('GET', './response.json');
       post.responseType = 'json';
-      post.send();
+      post.send();*/
 
       post.onload = function () {
         var response = post.response;
