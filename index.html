@@ -78,7 +78,7 @@
       setStatus('generating');
       var get = new XMLHttpRequest();
       get.withCredentials = true;
-      get.open('GET', 'https://public.lyrebird.ai/api/public/sentences');
+      get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
       get.responseType = 'json';
       get.send();
       /*var get = new XMLHttpRequest();
@@ -173,7 +173,7 @@
       setStatus('generating');
       var post = new XMLHttpRequest();
       post.withCredentials = true;
-      post.open('POST', 'https://public.lyrebird.ai/api/public/imputation');
+      post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
       post.responseType = 'json';
       post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       post.send(JSON.stringify({id: id, text: text}));
