@@ -8,8 +8,8 @@
     <link href="./style.min.css" rel="stylesheet">
   </head>
   <body ontouchstart="">
-    <div class="widget">
-      <div class="sample sample_default">
+    <div id="demo-widget" class="widget">
+      <div id="demo-sample" class="sample sample_default">
         <select class="sample__select" onchange="selectSample(event)">
         </select>
       </div>
@@ -19,12 +19,15 @@
         <label for="speak__button" class="speak__label speak__label_modified" onclick="restoreSamples()">Restore original</label>
         <button name="speak__button" class="speak__button" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
+      <audio id="demo-audio" onended="setStatus()"></audio>
     </div>
   <script>
+    var widget = document.querySelector('#demo-widget');
+    var sample = document.querySelector('#demo-sample');
+    var audio = document.querySelector('#demo-audio');
     window.onload = generateSamples();
 
     function selectSample(event) {
-      var sample = event.target.parentElement;
       sample.classList.remove('sample_man-1');
       sample.classList.remove('sample_man-2');
       sample.classList.remove('sample_man-3');
@@ -37,7 +40,6 @@
 
     function inputChange(event) {
       var input = event.target;
-      var sample = input.parentElement.parentElement;
 
       if (sample.classList.contains('sample_default')) {
         sample.classList.remove('sample_default');
@@ -52,14 +54,13 @@
       var clone = document.createElement('pre');
       clone.classList.add('pre-input');
       clone.innerHTML = input.value;
-      sample.parentElement.appendChild(clone);
+      widget.appendChild(clone);
       input.style.width = clone.offsetWidth + 'px';
-      sample.parentElement.removeChild(clone);
+      widget.removeChild(clone);
     }
 
     function restoreSamples() {
       var inputEvent = document.createEvent('Event');
-      var sampleElement = document.querySelector('.sample');
       var inputs = document.querySelectorAll('.sample__input');
 
       inputEvent.initEvent('input', false, false);
@@ -69,8 +70,8 @@
         inputs[i].dispatchEvent(inputEvent);
       }
 
-      sampleElement.classList.remove('sample_modified');
-      sampleElement.classList.add('sample_default');
+      sample.classList.remove('sample_modified');
+      sample.classList.add('sample_default');
     }
     
     function generateSamples() {
@@ -90,8 +91,7 @@
       xhr.send();
 
       xhr.onload = function() {
-        var sampleElement = document.querySelector('.sample');
-        var selectElement = sampleElement.firstElementChild;
+        var select = sample.firstElementChild;
         var response = xhr.response;
 
         if (typeof response === "string") {
@@ -103,11 +103,11 @@
             if (part !== '') { return part.trim(); }
           });
 
-          sampleElement.insertAdjacentElement('beforeend', createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
-          selectElement.insertAdjacentElement('beforeend', createOption(item.speaker));
+          sample.insertAdjacentElement('beforeend', createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
+          select.insertAdjacentElement('beforeend', createOption(item.speaker));
 
           if (index === 0) {
-            sampleElement.classList.add('sample_' + item.speaker.replace(' ', '-'));
+            sample.classList.add('sample_' + item.speaker.replace(' ', '-'));
           }
         });
 
@@ -115,20 +115,17 @@
       };
     }
 
-    function handleButtonClick(event) {
-      var widget = event.target.parentElement.parentElement;
+    function handleButtonClick() {
+      var sampleName = sample.className.match(/_\w*-\d/)[0].replace('_', '');
+      var id = parseInt(sampleName.match(/\d/)[0]);
+      var text = document.querySelector('.sample__text_' + sampleName).firstElementChild.value;
 
       if (widget.classList.contains('widget_generating')) {
         return;
       } else if (widget.classList.contains('widget_playing')) {
-        widget.classList.remove('widget_playing');
+        playAudio();
       } else {
-        widget.classList.add('widget_generating');
-
-        setTimeout(function () {
-          widget.classList.remove('widget_generating');
-          widget.classList.add('widget_playing');
-        }, 1500);
+        requestAudio(id, text);
       }
     }
 
@@ -152,7 +149,6 @@
 
     function createOption(optionText) {
       var option = document.createElement('option');
-
       option.value = optionText.replace(' ', '-');
 
       if (optionText.match(/woman\s/)) {
@@ -162,6 +158,73 @@
       }
 
       return option;
+    }
+
+    function setStatus(status) {
+      resetStatus();
+
+      switch (status) {
+        case 'generating': {
+          widget.classList.add('widget_generating');
+          break;
+        }
+        case 'playing': {
+          widget.classList.add('widget_playing');
+          break;
+        }
+        default: {
+          resetStatus();
+          break;
+        }
+      }
+
+      function resetStatus() {
+        widget.classList.remove('widget_generating');
+        widget.classList.remove('widget_playing');
+      }
+    }
+
+    function requestAudio(id, text) {
+      setStatus('generating');
+      /*var post = new XMLHttpRequest();
+      post.withCredentials = true;
+      post.open('POST', 'https://public.lyrebird.ai/api/public/imputation');
+      post.responseType = 'json';
+      post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      post.send(JSON.stringify({id: id, text: text}));*/
+
+      var post = new XMLHttpRequest();
+      post.withCredentials = true;
+      post.open('GET', './response.json');
+      post.responseType = 'json';
+      // post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      post.send();
+
+      post.onload = function () {
+        var response = post.response;
+
+        if (typeof response === "string") {
+          response = JSON.parse(response);
+        }
+
+        if (response.audio_url !== undefined) {
+          playAudio(response.audio_url);
+        } else {
+          console.error('Error while fetching audio URL: ' + response);
+        }
+      }
+    }
+
+    function playAudio(src) {
+      if (src === undefined) {
+        audio.pause();
+        setStatus();
+        return;
+      }
+
+      audio.src = src;
+      setStatus('playing');
+      audio.play();
     }
   </script>
   </body>
