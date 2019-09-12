@@ -94,15 +94,20 @@
           response = JSON.parse(response);  // specially for ie
         }
 
-        response.forEach(function (item, index) {
+        response.forEach(function (item) {
           var text = item.text.split(item.text_to_change).map(function (part) {
             if (part !== '') { return part.trim(); }
           });
 
-          sample.appendChild(createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
+          sample.appendChild(createSample({
+            speaker: item.speaker,
+            text: text,
+            text_to_change: item.text_to_change,
+            sample_id: item.id
+          }));
           select.appendChild(createOption(item.speaker));
 
-          if (index === 0) {
+          if (item.id === 0) {
             sample.classList.add('sample_' + item.speaker.replace(' ', '-'));
           }
         });
@@ -121,8 +126,9 @@
       }
 
       var sampleName = sample.className.match(/_\w*-\d/)[0].replace('_', '');
-      var id = parseInt(sampleName.match(/\d/)[0]);
-      var text = document.querySelector('.sample__text_' + sampleName).firstElementChild.value;
+      var sampleElement = document.querySelector('.sample__text_' + sampleName);
+      var text = sampleElement.firstElementChild.value;
+      var id = sampleElement.dataset.id;
 
       if (widget.classList.contains('widget_playing')) {
         playAudio();
@@ -143,6 +149,7 @@
       var sampleText = document.createElement('div');
       sampleText.classList.add('sample__text');
       sampleText.classList.add('sample__text_' + sampleObject.speaker.replace(' ', '-'));
+      sampleText.setAttribute('data-sample', sampleObject.sample_id);
       sampleText.insertAdjacentText('beforeend', sampleObject.text[0]);
       sampleText.insertAdjacentElement('beforeend', input);
       sampleObject.text[1] !== undefined &&
