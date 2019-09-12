@@ -80,13 +80,8 @@
       xhr.withCredentials = true;
       xhr.open('GET', 'https://public.lyrebird.ai/api/public/sentences');
       xhr.responseType = 'json';
-      xhr.send();
-
-      xhr.onload = function() {
-        console.log(xhr.response[0]);
-      };*/
+      xhr.send();*/
       var xhr = new XMLHttpRequest();
-      // xhr.withCredentials = true;
       xhr.open('GET', './sentences.json');
       xhr.responseType = 'json';
       xhr.send();
@@ -104,8 +99,8 @@
             if (part !== '') { return part.trim(); }
           });
 
-          sample.insertAdjacentElement('beforeend', createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
-          select.insertAdjacentElement('beforeend', createOption(item.speaker));
+          sample.appendChild(createSample({ speaker: item.speaker, text: text, text_to_change: item.text_to_change }));
+          select.appendChild(createOption(item.speaker));
 
           if (index === 0) {
             sample.classList.add('sample_' + item.speaker.replace(' ', '-'));
@@ -118,16 +113,23 @@
     }
 
     function handleButtonClick() {
+      if (widget.classList.contains('widget_generating')) {
+        return;
+      }
+
       var sampleName = sample.className.match(/_\w*-\d/)[0].replace('_', '');
       var id = parseInt(sampleName.match(/\d/)[0]);
       var text = document.querySelector('.sample__text_' + sampleName).firstElementChild.value;
 
-      if (widget.classList.contains('widget_generating')) {
-        return;
-      } else if (widget.classList.contains('widget_playing')) {
+      if (widget.classList.contains('widget_playing')) {
         playAudio();
       } else {
         requestAudio(id, text);
+
+        //  specially for safari
+        audio.play();
+        audio.pause();
+        audio.currentTime = 0;
       }
     }
 
@@ -135,7 +137,7 @@
       var input = document.createElement('input');
       input.classList.add('sample__input');
       input.addEventListener('input', inputChange);
-      input.addEventListener('focus', function (event) { event.target.select() });
+      input.addEventListener('focus', input.select);
       input.type = 'text';
       input.setAttribute('data-value', sampleObject.text_to_change);
 
@@ -163,27 +165,9 @@
     }
 
     function setStatus(status) {
-      resetStatus();
-
-      switch (status) {
-        case 'generating': {
-          widget.classList.add('widget_generating');
-          break;
-        }
-        case 'playing': {
-          widget.classList.add('widget_playing');
-          break;
-        }
-        default: {
-          resetStatus();
-          break;
-        }
-      }
-
-      function resetStatus() {
-        widget.classList.remove('widget_generating');
-        widget.classList.remove('widget_playing');
-      }
+      widget.classList.remove('widget_generating');
+      widget.classList.remove('widget_playing');
+      typeof status === 'string' && widget.classList.add('widget_' + status);
     }
 
     function requestAudio(id, text) {
@@ -199,7 +183,6 @@
       post.withCredentials = true;
       post.open('GET', './response.json');
       post.responseType = 'json';
-      // post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       post.send();
 
       post.onload = function () {
@@ -212,7 +195,7 @@
         if (response.audio_url !== undefined) {
           playAudio(response.audio_url);
         } else {
-          console.error('Error while fetching audio URL: ' + response);
+          console.error('Error while fetching URL of audio: ' + response);
         }
       }
     }
@@ -224,7 +207,10 @@
         return;
       }
 
-      audio.src = src;
+      if (audio.src !== src) {
+        audio.src = src;
+      }
+
       setStatus('playing');
       audio.play();
     }
