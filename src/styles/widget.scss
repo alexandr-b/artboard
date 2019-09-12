@@ -243,22 +243,39 @@
   }
 
   &_generating {
-    .speak__button:before {
-      background-image: url('./assets/svg/generating.svg');
-    }
+    .speak__button {
+      &:before {
+        background-image: url('./assets/svg/generating.svg');
+        animation: rotating 1s linear infinite;
+      }
 
-    .speak__button:after {
-      display: none;
+      &:after {
+        display: none;
+      }
     }
   }
 
   &_playing {
-    .speak__button:before {
-      background-image: url('./assets/svg/playing.svg');
+    .speak__button {
+      &:before {
+        width: 20px;
+        height: 18px;
+        background-image: url('./assets/svg/playing.svg');
+      }
+
+      &:after {
+        display: none;
+      }
+    }
+  }
+
+  @keyframes rotating {
+    from {
+      transform: rotate(-1deg);
     }
 
-    .speak__button:after {
-      display: none;
+    to {
+      transform: rotate(359deg);
     }
   }
 }
