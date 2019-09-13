@@ -21,7 +21,7 @@
         </div>
         <button class="speak__button speak__button_play" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="console.log(event)"></audio>
+      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
@@ -154,6 +154,7 @@
     function setStatus(status) {
       widget.classList.remove('widget_generating');
       widget.classList.remove('widget_playing');
+      widget.classList.remove('widget_error');
       typeof status === 'string' && widget.classList.add('widget_' + status);
     }
 
@@ -232,6 +233,12 @@
       }
 
       setStatus();
+    }
+
+    function errorAudio() {
+      audio.innerHTML = '';
+      document.querySelector('.speak__text').innerHTML = 'Sorry, but your browser isn’t supported.';
+      setStatus('error');
     }
   </script>
   </body>
