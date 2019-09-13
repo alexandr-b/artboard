@@ -80,6 +80,7 @@
       get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
       get.responseType = 'json';
       get.send();
+
       /*var get = new XMLHttpRequest();
       get.open('GET', './sentences.json');
       get.responseType = 'json';
@@ -205,17 +206,26 @@
     }
 
     function playAudio(src) {
-      if (audio.src !== src) {
-        audio.src = src;
-      }
+      var source = document.createElement('SOURCE');
+      var types = {
+        mp3: 'mpeg',
+        ogg: 'ogg',
+        wav: 'wav'
+      };
+      var type = types[src.match(/\w*\d*$/i)[0]];
 
+      if (type === undefined) { return; }
+
+      source.type = 'audio/' + type;
+      source.src = src;
+      audio.appendChild(source);
       audio.play();
     }
 
     function stopAudio() {
-      if (audio.src !== document.URL) {
-        audio.currentTime !== 0 && audio.pause();
-        audio.src = '';
+      if (audio.children.length !== 0) {
+        audio.pause();
+        audio.innerHTML = '';
       }
 
       setStatus();
