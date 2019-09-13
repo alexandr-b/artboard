@@ -42,7 +42,10 @@
     function inputChange(event) {
       var input = event.target;
 
-      if (sample.classList.contains('sample_default')) {
+      if (
+        sample.classList.contains('sample_default')
+        && !widget.classList.contains('widget_error')
+      ) {
         sample.classList.remove('sample_default');
         sample.classList.add('sample_modified');
       }
@@ -162,6 +165,7 @@
       if (
         event.button !== 0
         || widget.classList.contains('widget_generating')
+        || widget.classList.contains('widget_error')
       ) {
         return;
       }
@@ -237,7 +241,7 @@
 
     function errorAudio() {
       audio.innerHTML = '';
-      document.querySelector('.speak__text').innerHTML = 'Sorry, but your browser isn’t supported.';
+      document.querySelector('.speak__text').innerHTML = 'Your browser isn’t supported.';
       setStatus('error');
     }
   </script>

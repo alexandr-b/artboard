@@ -191,6 +191,7 @@
     }
 
     &__text {
+      max-width: 100%;
       font-weight: 200;
     }
 
@@ -299,8 +300,8 @@
   &_error {
     .speak__button {
       &_play:before {
-        width: 30px;
-        height: 30px;
+        width: 14px;
+        height: 14px;
         background-image: url('./assets/svg/error.svg');
         background-size: 100% 100%;
       }
