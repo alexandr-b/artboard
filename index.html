@@ -209,7 +209,7 @@
         if (typeof response === "string") {
           response = JSON.parse(response);
         }
-        debug('response: ' + response);
+        debug('response: ' + response.audio_url);
 
         response.audio_url !== undefined
           ? playAudio(response.audio_url)
@@ -231,7 +231,10 @@
       source.type = 'audio/' + type;
       source.src = src;
       audio.appendChild(source);
-      debug('source: ' + audio.firstElementChild.valueOf());
+      debug('source: ' + audio.firstElementChild.src);
+      debug('paused: ' + audio.paused);
+      debug('muted: ' + audio.muted);
+      debug('error: ' + audio.error.message);
       audio.play();
     }
 
