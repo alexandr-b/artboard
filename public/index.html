@@ -21,7 +21,7 @@
         </div>
         <button class="speak__button speak__button_play" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="stopAudio()"></audio>
+      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="console.log(event)"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
@@ -77,16 +77,16 @@
     
     function generateSamples() {
       setStatus('generating');
-      var get = new XMLHttpRequest();
+      /*var get = new XMLHttpRequest();
       get.withCredentials = true;
       get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
       get.responseType = 'json';
-      get.send();
+      get.send();*/
 
-      /*var get = new XMLHttpRequest();
+      var get = new XMLHttpRequest();
       get.open('GET', './sentences.json');
       get.responseType = 'json';
-      get.send();*/
+      get.send();
 
       get.onload = function() {
         var select = sample.firstElementChild;
@@ -181,18 +181,18 @@
 
     function requestAudio(id, text) {
       setStatus('generating');
-      var post = new XMLHttpRequest();
+      /*var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
       post.responseType = 'json';
       post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      post.send(JSON.stringify({id: id, text: text}));
+      post.send(JSON.stringify({id: id, text: text}));*/
 
-      /*var post = new XMLHttpRequest();
+      var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('GET', './response.json');
       post.responseType = 'json';
-      post.send();*/
+      post.send();
 
       post.onload = function () {
         var response = post.response;
@@ -227,6 +227,7 @@
     function stopAudio() {
       if (audio.children.length !== 0) {
         audio.pause();
+        audio.currentTime = 0;
         audio.innerHTML = '';
       }
 
