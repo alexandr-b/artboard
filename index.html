@@ -208,9 +208,12 @@
           response = JSON.parse(response);
         }
 
-        response.audio_url !== undefined
-          ? playAudio(response.audio_url)
-          : console.error('Error while fetching URL of audio: ' + response);
+        if (response.audio_url !== undefined) {
+          playAudio(response.audio_url);
+        } else {
+          console.error('Error while fetching URL of audio: ' + response);
+          setStatus();
+        }
       }
     }
 
@@ -242,6 +245,7 @@
         audio.pause();
         audio.currentTime = 0;
         audio.innerHTML = '';
+        audio.src = '';
       }
 
       setStatus();
