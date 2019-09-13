@@ -23,10 +23,12 @@
       </div>
       <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
+    <div id="debug" style="position: absolute; bottom: 0; font-size: 12px; max-width: 100%"></div>
   <script>
     var widget = document.querySelector('#demo-widget');
     var sample = document.querySelector('#demo-sample');
     var audio = document.querySelector('#demo-audio');
+    function debug(str) { document.querySelector('#debug').innerHTML += str + '<br />' }
     window.onload = generateSamples();
 
     function selectSample(event) {
@@ -162,6 +164,7 @@
     }
 
     function handleButtonClick(event) {
+      debug('button: ' + event.button);
       if (
         event.button !== 0
         || widget.classList.contains('widget_generating')
@@ -198,6 +201,7 @@
       post.open('GET', './response.json');
       post.responseType = 'json';
       post.send();
+      debug('send request');
 
       post.onload = function () {
         var response = post.response;
@@ -205,6 +209,7 @@
         if (typeof response === "string") {
           response = JSON.parse(response);
         }
+        debug('response: ' + response);
 
         response.audio_url !== undefined
           ? playAudio(response.audio_url)
@@ -226,6 +231,7 @@
       source.type = 'audio/' + type;
       source.src = src;
       audio.appendChild(source);
+      debug('source: ' + audio.firstElementChild.valueOf());
       audio.play();
     }
 
