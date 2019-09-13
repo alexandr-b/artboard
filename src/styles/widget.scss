@@ -296,6 +296,21 @@
     }
   }
 
+  &_error {
+    .speak__button {
+      &_play:before {
+        width: 30px;
+        height: 30px;
+        background-image: url('./assets/svg/error.svg');
+        background-size: 100% 100%;
+      }
+
+      &_play:after {
+        display: none;
+      }
+    }
+  }
+
   & .sample_man-1 .sample__text_man-1,
   & .sample_man-2 .sample__text_man-2,
   & .sample_man-3 .sample__text_man-3,
