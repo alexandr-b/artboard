@@ -164,7 +164,6 @@
     }
 
     function handleButtonClick(event) {
-      debug('button: ' + event.button);
       if (
         event.button !== 0
         || widget.classList.contains('widget_generating')
@@ -183,7 +182,7 @@
       var id = parseInt(currentSample.dataset.sample);
       var text = currentSample.firstElementChild.value;
 
-      audio.pause(); //  specially for safari
+      audio.play(); //  specially for safari
       requestAudio(id, text);
     }
 
@@ -201,7 +200,6 @@
       post.open('GET', './response.json');
       post.responseType = 'json';
       post.send();
-      debug('send request');
 
       post.onload = function () {
         var response = post.response;
@@ -209,7 +207,6 @@
         if (typeof response === "string") {
           response = JSON.parse(response);
         }
-        debug('response: ' + response.audio_url);
 
         response.audio_url !== undefined
           ? playAudio(response.audio_url)
@@ -231,14 +228,16 @@
       source.type = 'audio/' + type;
       source.src = src;
       audio.appendChild(source);
-      debug('source: ' + audio.firstElementChild.src);
+      audio.play();
+      audio.error && debug('error: ' + audio.error.message);
+      debug('source: ' + audio.currentSrc);
+      debug('time: ' + audio.currentTime);
       debug('paused: ' + audio.paused);
       debug('muted: ' + audio.muted);
-      debug('error: ' + audio.error.message);
-      audio.play();
     }
 
     function stopAudio() {
+      debug('time: ' + audio.currentTime);
       if (audio.children.length !== 0) {
         audio.pause();
         audio.currentTime = 0;
