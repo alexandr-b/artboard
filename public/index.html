@@ -21,7 +21,7 @@
         </div>
         <button class="speak__button speak__button_play" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
+      <audio id="demo-audio" onloadeddata="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
     <div id="debug" style="position: absolute; bottom: 0; font-size: 12px; max-width: 100%"></div>
   <script>
@@ -130,6 +130,7 @@
       input.addEventListener('input', inputChange);
       input.addEventListener('focus', input.select);
       input.type = 'text';
+      input.maxLength = 30;
       input.setAttribute('data-value', sampleObject.text_to_change);
 
       var sampleText = document.createElement('div');
@@ -183,6 +184,7 @@
       var text = currentSample.firstElementChild.value;
 
       audio.play(); //  specially for safari
+      audio.pause();
       requestAudio(id, text);
     }
 
@@ -231,27 +233,32 @@
       source.type = 'audio/' + type;
       source.src = src;
       audio.appendChild(source);
+      audio.load();
       audio.play();
-      audio.error && debug('error: ' + audio.error.message);
-      debug('source: ' + audio.currentSrc);
-      debug('time: ' + audio.currentTime);
-      debug('paused: ' + audio.paused);
-      debug('muted: ' + audio.muted);
+      debug('play src: ' + audio.src);
+      debug('play currentSrc: ' + audio.currentSrc);
+      debug('play network: ' + audio.networkState);
+      debug('play time: ' + audio.currentTime);
+      debug('play paused: ' + audio.paused);
+      debug('play muted: ' + audio.muted);
     }
 
     function stopAudio() {
-      debug('time: ' + audio.currentTime);
+      debug('stop time: ' + audio.currentTime);
+      debug('stop network: ' + audio.networkState);
+      debug('stop src: ' + audio.src);
+      debug('stop currentSrc: ' + audio.currentSrc);
       if (audio.children.length !== 0) {
         audio.pause();
         audio.currentTime = 0;
         audio.innerHTML = '';
-        audio.src = '';
       }
 
       setStatus();
     }
 
     function errorAudio() {
+      debug('error: ' + audio.error.message);
       audio.innerHTML = '';
       document.querySelector('.speak__text').innerHTML = 'Your browser isn’t supported.';
       setStatus('error');
