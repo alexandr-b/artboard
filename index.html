@@ -19,7 +19,7 @@
         <label for="speak__button" class="speak__label speak__label_modified" onclick="restoreSamples()">Restore original</label>
         <button name="speak__button" class="speak__button" data-value="Speak It" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplay="setStatus('playing')" onended="playAudio()" onerror="playAudio()"></audio>
+      <audio id="demo-audio" onplay="setStatus('playing')" onended="stopAudio()" onerror="stopAudio()"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
@@ -28,12 +28,11 @@
     window.onload = generateSamples();
 
     function selectSample(event) {
-      sample.classList.remove('sample_man-1');
-      sample.classList.remove('sample_man-2');
-      sample.classList.remove('sample_man-3');
-      sample.classList.remove('sample_woman-1');
-      sample.classList.remove('sample_woman-2');
-      sample.classList.remove('sample_woman-3');
+      for (i = 1; i <= 3; i++) {
+        sample.classList.remove('sample_man-' + i);
+        sample.classList.remove('sample_woman-' + i);
+      }
+
       sample.classList.add('sample_' + event.target.value);
       restoreSamples();
     }
@@ -81,6 +80,7 @@
       get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
       get.responseType = 'json';
       get.send();
+
       /*var get = new XMLHttpRequest();
       get.open('GET', './sentences.json');
       get.responseType = 'json';
@@ -117,27 +117,6 @@
       }
     }
 
-    function handleButtonClick(event) {
-      if (
-        event.button !== 0
-        || widget.classList.contains('widget_generating')
-      ) {
-        return;
-      }
-
-      var sampleName = sample.className.match(/_\w*-\d/)[0].replace('_', '');
-      var sampleElement = document.querySelector('.sample__text_' + sampleName);
-      var text = sampleElement.firstElementChild.value;
-      var id = parseInt(sampleElement.dataset.sample);
-
-      if (widget.classList.contains('widget_playing')) {
-        playAudio();
-      } else {
-        audio.pause(); //  specially for safari
-        requestAudio(id, text);
-      }
-    }
-
     function createSample(sampleObject) {
       var input = document.createElement('input');
       input.classList.add('sample__input');
@@ -153,7 +132,7 @@
       sampleText.insertAdjacentText('beforeend', sampleObject.text[0]);
       sampleText.insertAdjacentElement('beforeend', input);
       sampleObject.text[1] !== undefined &&
-        sampleText.insertAdjacentText('beforeend', sampleObject.text[1]);
+      sampleText.insertAdjacentText('beforeend', sampleObject.text[1]);
       return sampleText;
     }
 
@@ -174,6 +153,28 @@
       widget.classList.remove('widget_generating');
       widget.classList.remove('widget_playing');
       typeof status === 'string' && widget.classList.add('widget_' + status);
+    }
+
+    function handleButtonClick(event) {
+      if (
+        event.button !== 0
+        || widget.classList.contains('widget_generating')
+      ) {
+        return;
+      }
+
+      if (widget.classList.contains('widget_playing')) {
+        stopAudio();
+        return;
+      }
+
+      var sampleName = sample.className.match(/_\w*-\d/)[0].slice(1);
+      var currentSample = document.querySelector('.sample__text_' + sampleName);
+      var id = parseInt(currentSample.dataset.sample);
+      var text = currentSample.firstElementChild.value;
+
+      audio.pause(); //  specially for safari
+      requestAudio(id, text);
     }
 
     function requestAudio(id, text) {
@@ -198,30 +199,36 @@
           response = JSON.parse(response);
         }
 
-        if (response.audio_url !== undefined) {
-          playAudio(response.audio_url);
-        } else {
-          console.error('Error while fetching URL of audio: ' + response);
-        }
+        response.audio_url !== undefined
+          ? playAudio(response.audio_url)
+          : console.error('Error while fetching URL of audio: ' + response);
       }
     }
 
     function playAudio(src) {
-      if (src === undefined) {
-        if (audio.src !== document.URL) {
-          audio.currentTime !== 0 && audio.pause();
-          audio.src = '';
-        }
+      var source = document.createElement('SOURCE');
+      var types = {
+        mp3: 'mpeg',
+        ogg: 'ogg',
+        wav: 'wav'
+      };
+      var type = types[src.match(/\w*\d*$/i)[0]];
 
-        setStatus();
-        return;
-      }
+      if (type === undefined) { return; }
 
-      if (audio.src !== src) {
-        audio.src = src;
-      }
-
+      source.type = 'audio/' + type;
+      source.src = src;
+      audio.appendChild(source);
       audio.play();
+    }
+
+    function stopAudio() {
+      if (audio.children.length !== 0) {
+        audio.pause();
+        audio.innerHTML = '';
+      }
+
+      setStatus();
     }
   </script>
   </body>
