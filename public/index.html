@@ -86,11 +86,6 @@
       get.responseType = 'json';
       get.send();
 
-      /*var get = new XMLHttpRequest();
-      get.open('GET', './sentences.json');
-      get.responseType = 'json';
-      get.send();*/
-
       get.onload = function() {
         var select = sample.firstElementChild;
         var response = get.response;
@@ -194,12 +189,6 @@
       post.responseType = 'json';
       post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       post.send(JSON.stringify({id: id, text: text}));
-
-      /*var post = new XMLHttpRequest();
-      post.withCredentials = true;
-      post.open('GET', './response.json');
-      post.responseType = 'json';
-      post.send();*/
 
       post.onload = function () {
         var response = post.response;
