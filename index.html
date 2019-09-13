@@ -23,12 +23,10 @@
       </div>
       <audio id="demo-audio" onloadeddata="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
-    <div id="debug" style="position: absolute; bottom: 0; font-size: 12px; max-width: 100%"></div>
   <script>
     var widget = document.querySelector('#demo-widget');
     var sample = document.querySelector('#demo-sample');
     var audio = document.querySelector('#demo-audio');
-    function debug(str) { document.querySelector('#debug').innerHTML += str + '<br />' }
     window.onload = generateSamples();
 
     function selectSample(event) {
@@ -82,16 +80,16 @@
     
     function generateSamples() {
       setStatus('generating');
-      /*var get = new XMLHttpRequest();
+      var get = new XMLHttpRequest();
       get.withCredentials = true;
       get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
       get.responseType = 'json';
-      get.send();*/
+      get.send();
 
-      var get = new XMLHttpRequest();
+      /*var get = new XMLHttpRequest();
       get.open('GET', './sentences.json');
       get.responseType = 'json';
-      get.send();
+      get.send();*/
 
       get.onload = function() {
         var select = sample.firstElementChild;
@@ -190,18 +188,18 @@
 
     function requestAudio(id, text) {
       setStatus('generating');
-      /*var post = new XMLHttpRequest();
+      var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
       post.responseType = 'json';
       post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      post.send(JSON.stringify({id: id, text: text}));*/
+      post.send(JSON.stringify({id: id, text: text}));
 
-      var post = new XMLHttpRequest();
+      /*var post = new XMLHttpRequest();
       post.withCredentials = true;
       post.open('GET', './response.json');
       post.responseType = 'json';
-      post.send();
+      post.send();*/
 
       post.onload = function () {
         var response = post.response;
@@ -235,19 +233,9 @@
       audio.appendChild(source);
       audio.load();
       audio.play();
-      debug('play src: ' + audio.src);
-      debug('play currentSrc: ' + audio.currentSrc);
-      debug('play network: ' + audio.networkState);
-      debug('play time: ' + audio.currentTime);
-      debug('play paused: ' + audio.paused);
-      debug('play muted: ' + audio.muted);
     }
 
     function stopAudio() {
-      debug('stop time: ' + audio.currentTime);
-      debug('stop network: ' + audio.networkState);
-      debug('stop src: ' + audio.src);
-      debug('stop currentSrc: ' + audio.currentSrc);
       if (audio.children.length !== 0) {
         audio.pause();
         audio.currentTime = 0;
@@ -258,7 +246,6 @@
     }
 
     function errorAudio() {
-      debug('error: ' + audio.error.message);
       audio.innerHTML = '';
       document.querySelector('.speak__text').innerHTML = 'Your browser isn’t supported.';
       setStatus('error');
