@@ -15,17 +15,16 @@
       </div>
       <hr />
       <div class="speak">
-        <div class="speak__label">
-          <p class="speak__text">Type whatever you want in the pink section, then click “Speak it” to hear.</p>
-          <button class="speak__button speak__button_restore" data-value="Restore original" onclick="restoreSamples()"></button>
-        </div>
-        <button class="speak__button speak__button_play" data-value="Speak It" onclick="handleButtonClick(event)"></button>
+        <p id="demo-hint" class="speak__hint"></p>
+        <button class="speak__button speak__button_restore" onclick="restoreSamples()"></button>
+        <button class="speak__button speak__button_play" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onloadeddata="setStatus('playing')" onended="stopAudio()" onerror="errorAudio()"></audio>
+      <audio id="demo-audio" onplaying="setStatus('playing')" onpause="stopAudio()" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
     var sample = document.querySelector('#demo-sample');
+    var hint = document.querySelector('#demo-hint');
     var audio = document.querySelector('#demo-audio');
     window.onload = generateSamples();
 
@@ -41,6 +40,7 @@
 
     function inputChange(event) {
       var input = event.target;
+      widget.classList.contains('widget_generated') && setStatus('ready');
 
       if (
         sample.classList.contains('sample_default')
@@ -61,21 +61,40 @@
       widget.appendChild(clone);
       input.style.width = clone.offsetWidth + 'px';
       widget.removeChild(clone);
+
+      if (
+        input.style.width !== ''
+        && input.style.minWidth === ''
+      ) {
+        input.style.minWidth = input.style.width;
+      }
     }
 
     function restoreSamples() {
       var inputEvent = document.createEvent('Event');
       var inputs = document.querySelectorAll('.sample__input');
+      var currentSample = sample.className.match(/_\w*-\d/)[0].slice(1);
 
       inputEvent.initEvent('input', false, false);
 
       for (i = 0; i < inputs.length; i++) {
         inputs[i].value = inputs[i].dataset.value;
         inputs[i].dispatchEvent(inputEvent);
+        inputs[i].nextElementSibling.dataset.original = '';
       }
 
+      hint.innerHTML = 'Click to type a correction.';
       sample.classList.remove('sample_modified');
       sample.classList.add('sample_default');
+
+      if (
+        widget.classList.contains('widget_generated')
+        || widget.classList.contains('widget_generating')
+      ) {
+        setStatus('ready');
+      }
+
+      loadAudio(document.querySelector('.sample__text_' + currentSample).dataset.audio, false);
     }
     
     function generateSamples() {
@@ -103,17 +122,19 @@
             speaker: item.speaker,
             text: text,
             text_to_change: item.text_to_change,
-            sample_id: item.id
+            sample_id: item.id,
+            audio_url: item.audio_url,
           }));
           select.appendChild(createOption(item.speaker));
 
           if (item.id === 0) {
             sample.classList.add('sample_' + item.speaker.replace(' ', '-'));
+            loadAudio(item.audio_url, false);
           }
         });
 
         restoreSamples();
-        setStatus();
+        setStatus('ready');
       }
     }
 
@@ -121,7 +142,8 @@
       var input = document.createElement('input');
       input.classList.add('sample__input');
       input.addEventListener('input', inputChange);
-      input.addEventListener('focus', input.select);
+      input.addEventListener('focus', focusOnInput);
+      input.addEventListener('blur', blurOnInput);
       input.type = 'text';
       input.maxLength = 30;
       input.setAttribute('data-value', sampleObject.text_to_change);
@@ -130,8 +152,15 @@
       sampleText.classList.add('sample__text');
       sampleText.classList.add('sample__text_' + sampleObject.speaker.replace(' ', '-'));
       sampleText.setAttribute('data-sample', sampleObject.sample_id);
+      sampleText.setAttribute('data-audio', sampleObject.audio_url);
       sampleText.insertAdjacentText('beforeend', sampleObject.text[0]);
-      sampleText.insertAdjacentElement('beforeend', input);
+      sampleText.appendChild(input);
+
+      var originalText = document.createElement('span');
+      originalText.classList.add('sample__original');
+      originalText.setAttribute('data-original', '');
+      sampleText.appendChild(originalText);
+
       sampleObject.text[1] !== undefined &&
       sampleText.insertAdjacentText('beforeend', sampleObject.text[1]);
       return sampleText;
@@ -152,8 +181,10 @@
 
     function setStatus(status) {
       widget.classList.remove('widget_generating');
+      widget.classList.remove('widget_generated');
       widget.classList.remove('widget_playing');
       widget.classList.remove('widget_error');
+      widget.classList.remove('widget_ready');
       typeof status === 'string' && widget.classList.add('widget_' + status);
     }
 
@@ -167,17 +198,26 @@
       }
 
       if (widget.classList.contains('widget_playing')) {
-        stopAudio();
+        audio.pause();
+        return;
+      } else if (
+        widget.classList.contains('widget_generated')
+        || (
+          widget.classList.contains('widget_ready')
+          && sample.classList.contains('sample_default')
+        )
+      ) {
+        audio.play();
         return;
       }
+
+      audio.pause();
 
       var sampleName = sample.className.match(/_\w*-\d/)[0].slice(1);
       var currentSample = document.querySelector('.sample__text_' + sampleName);
       var id = parseInt(currentSample.dataset.sample);
       var text = currentSample.firstElementChild.value;
 
-      audio.play(); //  specially for safari
-      audio.pause();
       requestAudio(id, text);
     }
 
@@ -191,6 +231,10 @@
       post.send(JSON.stringify({id: id, text: text}));
 
       post.onload = function () {
+        if (!widget.classList.contains('widget_generating')) {
+          return;
+        }
+
         var response = post.response;
 
         if (typeof response === "string") {
@@ -198,7 +242,8 @@
         }
 
         if (response.audio_url !== undefined) {
-          playAudio(response.audio_url);
+          loadAudio(response.audio_url, true);
+          // setStatus('generated');
         } else {
           console.error('Error while fetching URL of audio: ' + response);
           setStatus();
@@ -206,7 +251,13 @@
       }
     }
 
-    function playAudio(src) {
+    function loadAudio(src, play) {
+      if (widget.classList.contains('widget_playing')) {
+        sample.classList.contains('sample_default')
+          ? setStatus('ready')
+          : setStatus('generated');
+      }
+
       var source = document.createElement('SOURCE');
       var types = {
         mp3: 'mpeg',
@@ -219,25 +270,49 @@
 
       source.type = 'audio/' + type;
       source.src = src;
+      audio.innerHTML = '';
       audio.appendChild(source);
       audio.load();
-      audio.play();
+      play && audio.play();
     }
 
     function stopAudio() {
-      if (audio.children.length !== 0) {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.innerHTML = '';
-      }
+      audio.currentTime = 0;
 
-      setStatus();
+      sample.classList.contains('sample_default')
+        ? setStatus('ready')
+        : setStatus('generated');
     }
 
     function errorAudio() {
-      audio.innerHTML = '';
-      document.querySelector('.speak__text').innerHTML = 'Your browser isn’t supported.';
+      hint.innerHTML = 'Your browser isn’t supported.';
       setStatus('error');
+    }
+
+    function focusOnInput(event) {
+      var input = event.target;
+      var original = input.nextElementSibling;
+      hint.innerHTML = 'Type whatever you want.';
+
+      if (sample.classList.contains('sample_modified')) {
+        return;
+      }
+
+      original.dataset.original = input.dataset.value;
+      input.value = '';
+    }
+
+    function blurOnInput(event) {
+      var input = event.target;
+      var original = input.nextElementSibling;
+      hint.innerHTML = 'Click to type a correction.';
+
+      if (sample.classList.contains('sample_modified')) {
+        return;
+      }
+
+      input.value = input.dataset.value;
+      original.dataset.original = '';
     }
   </script>
   </body>
