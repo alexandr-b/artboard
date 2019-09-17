@@ -83,7 +83,7 @@
         inputs[i].nextElementSibling.dataset.original = '';
       }
 
-      hint.innerHTML = 'Click to type a correction.';
+      hint.innerHTML = 'Click into the outlined section to type a correction.';
       sample.classList.remove('sample_modified');
       sample.classList.add('sample_default');
 
@@ -305,7 +305,7 @@
     function blurOnInput(event) {
       var input = event.target;
       var original = input.nextElementSibling;
-      hint.innerHTML = 'Click to type a correction.';
+      hint.innerHTML = 'Click into the outlined section to type a correction.';
 
       if (sample.classList.contains('sample_modified')) {
         return;
