@@ -301,26 +301,6 @@
     }
   }
 
-  &_playing {
-    .speak {
-      &__button {
-        &_play {
-          padding: 0;
-
-          &:before {
-            width: 20px;
-            height: 18px;
-            background-image: url('./assets/svg/playing.svg');
-          }
-
-          &:after {
-            display: none;
-          }
-        }
-      }
-    }
-  }
-
   &_error {
     .speak {
       &__hint {
@@ -351,58 +331,92 @@
   }
 
   &_ready {
-    .sample_default + hr + .speak {
-      &__hint {
-        display: block;
+    &:not(.widget_playing) {
+      .sample_default + hr + .speak .speak {
+        &__hint {
+          display: block;
+        }
+
+        &__button {
+          &_restore {
+            display: none;
+          }
+        }
       }
 
-      &__button {
-        &_restore {
+      .sample_modified + hr + .speak .speak {
+        &__hint {
           display: none;
+        }
+
+        &__button {
+          &_restore {
+            display: flex;
+          }
+
+          &_play {
+            padding: 0 23px 0 19px;
+
+            &:before {
+              display: none;
+            }
+
+            &:after {
+              content: 'Generate audio';
+            }
+          }
         }
       }
     }
 
-    .sample_modified + hr + .speak .speak {
-      &__hint {
-        display: none;
+    &.widget_playing {
+      .speak {
+        &__button {
+          &_play {
+            padding: 0;
+
+            &:before {
+              display: block;
+              width: 20px;
+              height: 18px;
+              background-image: url('./assets/svg/playing.svg');
+            }
+
+            &:after {
+              display: none;
+            }
+          }
+        }
       }
 
-      &__button {
-        &_restore {
-          display: flex;
+      .sample_default + hr + .speak .speak {
+        &__hint {
+          display: block;
         }
 
-        &_play {
-          padding: 0 23px 0 19px;
-
-          &:before {
+        &__button {
+          &_restore {
             display: none;
           }
+        }
+      }
 
-          &:after {
-            content: 'Generate audio';
+      .sample_modified + hr + .speak .speak {
+        &__hint {
+          display: none;
+        }
+
+        &__button {
+          &_restore {
+            display: flex;
           }
         }
       }
     }
   }
 
-  &_generated,
-  &_playing {
-    .sample_default + hr + .speak {
-      &__hint {
-        display: block;
-      }
-
-      &__button {
-        &_restore {
-          display: none;
-        }
-      }
-    }
-
-    .sample_modified + hr + .speak .speak {
+  &_generated {
+    .speak {
       &__hint {
         display: none;
       }
@@ -411,6 +425,23 @@
         &_restore {
           display: flex;
         }
+      }
+    }
+  }
+
+  &_playing {
+    .speak__button_play {
+      padding: 0;
+
+      &:before {
+        display: block;
+        width: 20px;
+        height: 18px;
+        background-image: url('./assets/svg/playing.svg');
+      }
+
+      &:after {
+        display: none;
       }
     }
   }

@@ -19,7 +19,7 @@
         <button class="speak__button speak__button_restore" onclick="restoreSamples()"></button>
         <button class="speak__button speak__button_play" onclick="handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplaying="setStatus('playing')" onpause="stopAudio()" onended="stopAudio()" onerror="errorAudio()"></audio>
+      <audio id="demo-audio" onplaying="widget.classList.add('widget_playing')" onpause="stopAudio()" onended="stopAudio()" onerror="errorAudio()"></audio>
     </div>
   <script>
     var widget = document.querySelector('#demo-widget');
@@ -243,7 +243,6 @@
 
         if (response.audio_url !== undefined) {
           loadAudio(response.audio_url, true);
-          // setStatus('generated');
         } else {
           console.error('Error while fetching URL of audio: ' + response);
           setStatus();
@@ -252,11 +251,7 @@
     }
 
     function loadAudio(src, play) {
-      if (widget.classList.contains('widget_playing')) {
-        sample.classList.contains('sample_default')
-          ? setStatus('ready')
-          : setStatus('generated');
-      }
+      widget.classList.contains('widget_playing') && widget.classList.remove('widget_playing');
 
       var source = document.createElement('SOURCE');
       var types = {
@@ -273,15 +268,13 @@
       audio.innerHTML = '';
       audio.appendChild(source);
       audio.load();
+      sample.classList.contains('sample_modified') && setStatus('generated');
       play && audio.play();
     }
 
     function stopAudio() {
       audio.currentTime = 0;
-
-      sample.classList.contains('sample_default')
-        ? setStatus('ready')
-        : setStatus('generated');
+      widget.classList.remove('widget_playing');
     }
 
     function errorAudio() {
