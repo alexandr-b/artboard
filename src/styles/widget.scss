@@ -1,5 +1,7 @@
 :root {
-  //--accent: 222, 40, 152;
+  /* overdub pink: */
+  /*--accent: 222, 40, 152;*/
+  /* lyrebird blue: */
   --accent: 0, 98, 255;
 }
 
@@ -130,6 +132,7 @@
       margin-left: 5px;
       display: none;
       min-height: 72px;
+      color: #000;
       font-size: 22px;
       font-weight: 200;
       line-height: 36px;
@@ -146,7 +149,7 @@
       border: 1px solid rgba(#000, .15);
       border-radius: 4px;
       background-color: #fff;
-      color: #000;
+      color: inherit;
       font-size: inherit;
       font-weight: inherit;
       line-height: inherit;
