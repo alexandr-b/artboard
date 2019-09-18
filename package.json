@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "gulp",
-    "build": "export NODE_ENV=production&&gulp",
+    "build": "NODE_ENV=production gulp",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
