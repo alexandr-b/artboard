@@ -4,28 +4,357 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>artboard</title>
+    <title>overdub demo</title>
     <link href="./style.min.css" rel="stylesheet">
   </head>
   <body ontouchstart="">
     <div id="demo-widget" class="widget">
       <div id="demo-sample" class="sample sample_default">
-        <select class="sample__select" onchange="selectSample(event)">
-        </select>
+        <select id="demo-select" class="sample__select" onchange="widget.selectSample(parseInt(this.value))"></select>
+        <div id="demo-sample-text" class="sample__text">
+          <span id="demo-sample-text-before"></span>
+          <input id="demo-sample-input" class="sample__input" type="text" maxlength="30" oninput="widget.inputChange()" onfocus="widget.focusOnInput()" onblur="widget.blurOnInput()" onkeypress="widget.handleButtonClick(event)">
+          <span id="demo-sample-original" class="sample__original" data-original=""></span>
+          <span id="demo-sample-text-after"></span>
+        </div>
       </div>
       <hr />
       <div class="speak">
         <p id="demo-hint" class="speak__hint"></p>
-        <button class="speak__button speak__button_restore" onclick="restoreSamples()"></button>
-        <button class="speak__button speak__button_play" onclick="handleButtonClick(event)"></button>
+        <button id="demo-restore" class="speak__button speak__button_restore" onclick="widget.restoreSample()"></button>
+        <button id="demo-play" class="speak__button speak__button_play" onclick="widget.handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplaying="widget.classList.add('widget_playing')" onpause="stopAudio()" onended="stopAudio()" onerror="errorAudio()"></audio>
+      <audio id="demo-audio" onplaying="widget.setStatus('playing')" onpause="widget.stopAudio()" onended="widget.stopAudio()" onerror="widget.errorAudio()"></audio>
     </div>
-  <script>
+    <script>
+      function Widget() {
+        this.widget_status = '';
+        this.currentSample = 0;
+        this.sample_status = 'default';
+        this.samples = [];
+        this.isPlaying = false;
+        this.elements = {
+          widget: document.querySelector('#demo-widget'),
+          select: document.querySelector('#demo-select'),
+          sample: document.querySelector('#demo-sample'),
+          sample_text: document.querySelector('#demo-sample-text'),
+          sample_text_before: document.querySelector('#demo-sample-text-before'),
+          sample_text_after: document.querySelector('#demo-sample-text-after'),
+          sample_input: document.querySelector('#demo-sample-input'),
+          sample_original: document.querySelector('#demo-sample-original'),
+          hint: document.querySelector('#demo-hint'),
+          play: document.querySelector('#demo-play'),
+          restore: document.querySelector('#demo-restore'),
+          audio: document.querySelector('#demo-audio'),
+        };
+
+        this.setStatus = function(newStatus) {
+          if (this.widget_status === 'error') {
+            return;
+          }
+
+          switch (this.widget_status) {
+            case 'ready': {
+              this.widget_status = newStatus;
+              this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+              this.elements.widget.classList.remove('widget_generated');
+              this.elements.widget.classList.remove('widget_generating');
+              this.elements.widget.classList.add('widget_ready');
+              break;
+            }
+
+            case 'generating': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.remove('widget_ready');
+              this.elements.widget.classList.add('widget_generating');
+              break;
+            }
+
+            case 'generated': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.remove('widget_generating');
+              this.elements.widget.classList.add('widget_generated');
+              break;
+            }
+
+            case 'playing': {
+              this.isPlaying = true;
+              this.elements.widget.classList.add('widget_playing');
+              break;
+            }
+
+            case 'paused': {
+              this.isPlaying = false;
+              this.elements.widget.classList.remove('widget_playing');
+              break;
+            }
+
+            case 'error': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.add('widget_error');
+              this.elements.hint.style.display = 'block';
+              this.elements.restore.style.display = 'none';
+              this.elements.hint.innerHTML = 'Your browser isn’t supported.';
+              break;
+            }
+
+            case 'default': {
+              this.sample_status = newStatus;
+              this.elements.sample.classList.remove('sample_modified');
+              this.elements.sample.classList.add('sample_default');
+              this.elements.hint.style.display = 'block';
+              this.elements.restore.style.display = 'none';
+              this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+              break;
+            }
+
+            case 'modified': {
+              this.sample_status = newStatus;
+              this.elements.sample.classList.remove('sample_default');
+              this.elements.sample.classList.add('sample_modified');
+              this.elements.hint.style.display = 'none';
+              this.elements.restore.style.display = 'flex';
+              break;
+            }
+
+            default:
+              break;
+          }
+        };
+
+        this.loadAudio = function(src, play) {
+          this.isPlaying && this.setStatus('paused');
+
+          var source = document.createElement('SOURCE');
+          var types = {
+            mp3: 'mpeg',
+            ogg: 'ogg',
+            wav: 'wav'
+          };
+          var type = types[src.match(/\w*\d*$/i)[0]];
+
+          if (type === undefined) { return; }
+
+          source.type = 'audio/' + type;
+          source.src = src;
+          this.elements.audio.innerHTML = '';
+          this.elements.audio.appendChild(source);
+          this.elements.audio.load();
+          this.sample_status === 'modified' && this.setStatus('generated');
+          play && this.elements.audio.play();
+        };
+
+        this.stopAudio = function () {
+          this.elements.audio.currentTime = 0;
+          this.setStatus('paused');
+        };
+
+        this.errorAudio = function () {
+          this.setStatus('error');
+        };
+
+        this.createOption = function (id, text) {
+          var option = document.createElement('option');
+          option.value = id;
+
+          if (text.match(/woman\s/)) {
+            option.insertAdjacentText('beforeend', text.replace(/\bwoman\s/, 'Female Sample #'));
+          } else if (text.match(/\bman\s/)) {
+            option.insertAdjacentText('beforeend', text.replace(/\bman\s/, 'Male Sample #'));
+          }
+
+          return option;
+        };
+
+        this.restoreSample = function() {
+          var inputEvent = document.createEvent('Event');
+          inputEvent.initEvent('input', false, false);
+
+          this.elements.sample_input.value = this.elements.sample_input.dataset.value;
+          this.elements.sample_input.dispatchEvent(inputEvent);
+          this.elements.sample_original.dataset.original = '';
+
+          this.setStatus('default');
+          this.setStatus('ready');
+
+          this.loadAudio(this.samples[this.currentSample].audio_url, false);
+        };
+
+        this.selectSample = function (newSampleID) {
+          this.currentSample = newSampleID;
+          this.elements.sample_text_before.innerHTML = this.samples[this.currentSample].text_before;
+          this.samples[this.currentSample].text_after !== undefined
+            ? this.elements.sample_text_after.innerHTML = this.samples[this.currentSample].text_after
+            : this.elements.sample_text_after.innerHTML = '';
+          this.elements.sample_input.setAttribute('data-value', this.samples[this.currentSample].text_to_change);
+          this.restoreSample();
+        };
+
+        this.init = function() {
+          var _this = this;
+          _this.setStatus('generating');
+          var get = new XMLHttpRequest();
+          get.withCredentials = true;
+          get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
+          get.responseType = 'json';
+          get.send();
+
+          get.onload = function() {
+            var response = get.response;
+
+            if (typeof response === 'string') { // specially for chrome on win
+              response = JSON.parse(response);  // specially for ie
+            }
+
+            response.forEach(function (item) {
+              var text = item.text.split(item.text_to_change).map(function (part) {
+                if (part !== '') { return part.trim(); }
+              });
+
+              _this.samples.push({
+                speaker: item.speaker,
+                text_before: text[0],
+                text_after: text[1],
+                text_to_change: item.text_to_change,
+                sample_id: item.id,
+                audio_url: item.audio_url,
+              });
+              _this.elements.select.appendChild(_this.createOption(item.id, item.speaker));
+            });
+
+            _this.selectSample(0);
+            _this.restoreSample();
+            _this.setStatus('ready');
+          }
+        };
+
+        this.inputChange = function () {
+          this.widget_status === 'generated' && this.setStatus('ready');
+
+          if (
+            this.sample_status === 'default' && this.widget_status !== 'error'
+          ) {
+            this.setStatus('modified');
+          }
+
+          if (this.elements.sample_input.value.length < 1) {
+            this.elements.sample_input.style.width = '0';
+            return;
+          }
+
+          var clone = document.createElement('pre');
+          clone.id = 'pre-input';
+          clone.innerHTML = this.elements.sample_input.value;
+          this.elements.widget.appendChild(clone);
+          this.elements.sample_input.style.width = clone.offsetWidth + 'px';
+          this.elements.widget.removeChild(clone);
+
+          if (
+            this.elements.sample_input.style.width !== ''
+            && this.elements.sample_input.style.minWidth === ''
+          ) {
+            this.elements.sample_input.style.minWidth = this.elements.sample_input.style.width;
+          }
+        };
+
+        this.handleButtonClick = function (event) {
+          this.elements.audio.play();
+          this.elements.audio.pause();
+          if (
+            (
+              event.type === 'click' && event.button !== 0
+            )
+            || (
+              event.type === 'keypress' && event.keyCode !== 13
+            )
+            || this.widget_status === 'generating'
+            || this.widget_status === 'error'
+          ) {
+            return;
+          }
+
+          if (this.isPlaying) {
+            this.elements.audio.pause();
+            return;
+          } else if (
+            this.widget_status === 'generated'
+            || (
+              this.widget_status === 'ready'
+              && this.sample_status === 'default'
+            )
+          ) {
+            this.elements.audio.play();
+            return;
+          }
+
+          // audio.pause();
+
+          this.requestAudio(this.currentSample, this.elements.sample_input.value);
+        };
+
+        this.requestAudio = function (id, text) {
+          var _this = this;
+          _this.setStatus('generating');
+          var post = new XMLHttpRequest();
+          post.withCredentials = true;
+          post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
+          post.responseType = 'json';
+          post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          post.send(JSON.stringify({id: id, text: text}));
+
+          post.onload = function () {
+            if (_this.widget_status !== 'generating') {
+              return;
+            }
+
+            var response = post.response;
+
+            if (typeof response === "string") {
+              response = JSON.parse(response);
+            }
+
+            if (response !== null && response.audio_url !== null) {
+              _this.loadAudio(response.audio_url, true);
+            } else {
+              console.error('Error while fetching URL of audio: ' + response);
+              _this.restoreSample();
+              _this.setStatus('ready');
+            }
+          }
+        };
+
+        this.focusOnInput = function () {
+          this.elements.hint.innerHTML = 'Type whatever you want.';
+
+          if (this.sample_status === 'modified') {
+            return;
+          }
+
+          this.elements.sample_original.dataset.original = this.elements.sample_input.dataset.value;
+          this.elements.sample_input.value = '';
+        };
+
+        this.blurOnInput = function () {
+          this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+
+          if (this.sample_status === 'modified') {
+            return;
+          }
+
+          this.elements.sample_input.value = this.elements.sample_input.dataset.value;
+          this.elements.sample_original.dataset.original = '';
+        }
+      }
+
+      var widget = new Widget();
+      window.onload = widget.init();
+    </script>
+  <!--script>
     var widget = document.querySelector('#demo-widget');
     var sample = document.querySelector('#demo-sample');
     var hint = document.querySelector('#demo-hint');
     var audio = document.querySelector('#demo-audio');
+    var play = document.querySelector('#demo-play');
     window.onload = generateSamples();
 
     function selectSample(event) {
@@ -144,6 +473,7 @@
       input.addEventListener('input', inputChange);
       input.addEventListener('focus', focusOnInput);
       input.addEventListener('blur', blurOnInput);
+      input.addEventListener('keypress', handleButtonClick);
       input.type = 'text';
       input.maxLength = 30;
       input.setAttribute('data-value', sampleObject.text_to_change);
@@ -189,11 +519,19 @@
     }
 
     function handleButtonClick(event) {
+      audio.play();
+      audio.pause();
       if (
-        event.button !== 0
+        (
+          event.type === 'click' && event.button !== 0
+        )
+        || (
+          event.type === 'keypress' && event.keyCode !== 13
+        )
         || widget.classList.contains('widget_generating')
         || widget.classList.contains('widget_error')
       ) {
+        console.log(event);
         return;
       }
 
@@ -211,7 +549,7 @@
         return;
       }
 
-      audio.pause();
+      // audio.pause();
 
       var sampleName = sample.className.match(/_\w*-\d/)[0].slice(1);
       var currentSample = document.querySelector('.sample__text_' + sampleName);
@@ -241,11 +579,15 @@
           response = JSON.parse(response);
         }
 
-        if (response.audio_url !== undefined) {
+        if (
+          response !== null
+          && response.audio_url !== null
+        ) {
           loadAudio(response.audio_url, true);
         } else {
           console.error('Error while fetching URL of audio: ' + response);
-          setStatus();
+          restoreSamples();
+          setStatus('ready');
         }
       }
     }
@@ -307,6 +649,6 @@
       input.value = input.dataset.value;
       original.dataset.original = '';
     }
-  </script>
+  </script-->
   </body>
 </html>
