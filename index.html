@@ -14,7 +14,7 @@
         <div id="demo-sample-text">
           <span id="demo-sample-text-before"></span>
           <input id="demo-sample-input" type="text" maxlength="30" oninput="widget.inputChange()" onfocus="widget.focusOnInput()" onblur="widget.blurOnInput()" onkeypress="widget.handleButtonClick(event)">
-          <span id="demo-sample-original" data-original=""></span>
+          <span id="demo-sample-original"></span>
           <span id="demo-sample-text-after"></span>
         </div>
       </div>
@@ -200,11 +200,12 @@
           this.elements.input.style.minWidth = this.elements.input.style.width;
           this.elements.original.dataset.original = '';
 
+          this.setStatus('default');
+
           if (this.widget_status === 'error') {
             return;
           }
 
-          this.setStatus('default');
           this.setStatus('ready');
 
           this.loadAudio(this.samples[this.currentSample].audio_url, false);
@@ -357,7 +358,7 @@
             return;
           }
 
-          this.elements.original.dataset.original = this.elements.input.dataset.value;
+          this.elements.original.innerHTML = this.elements.input.dataset.value;
           this.elements.input.value = '';
         };
 
@@ -372,7 +373,7 @@
           }
 
           this.elements.input.value = this.elements.input.dataset.value;
-          this.elements.original.dataset.original = '';
+          this.elements.original.innerHTML= '';
         }
       }
 
