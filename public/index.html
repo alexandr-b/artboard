@@ -198,7 +198,7 @@
           this.elements.input.value = this.elements.input.dataset.value;
           this.elements.input.dispatchEvent(inputEvent);
           this.elements.input.style.minWidth = this.elements.input.style.width;
-          this.elements.original.dataset.original = '';
+          this.elements.original.innerHTML = '';
 
           this.setStatus('default');
 
