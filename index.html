@@ -4,309 +4,357 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>artboard</title>
+    <title>overdub demo</title>
     <link href="./style.min.css" rel="stylesheet">
   </head>
   <body ontouchstart="">
-    <div id="demo-widget" class="widget">
-      <div id="demo-sample" class="sample sample_default">
-        <select class="sample__select" onchange="selectSample(event)">
-        </select>
+    <div id="demo-widget">
+      <div id="demo-sample">
+        <select id="demo-select" onchange="widget.selectSample(parseInt(this.value))"></select>
+        <div id="demo-sample-text">
+          <span id="demo-sample-text-before"></span>
+          <input id="demo-sample-input" type="text" maxlength="30" oninput="widget.inputChange()" onfocus="widget.focusOnInput()" onblur="widget.blurOnInput()" onkeypress="widget.handleButtonClick(event)">
+          <span id="demo-sample-original" data-original=""></span>
+          <span id="demo-sample-text-after"></span>
+        </div>
       </div>
       <hr />
-      <div class="speak">
-        <p id="demo-hint" class="speak__hint"></p>
-        <button class="speak__button speak__button_restore" onclick="restoreSamples()"></button>
-        <button class="speak__button speak__button_play" onclick="handleButtonClick(event)"></button>
+      <div id="demo-controls">
+        <p id="demo-hint"></p>
+        <button id="demo-restore" onclick="widget.restoreSample()"></button>
+        <button id="demo-play" onclick="widget.handleButtonClick(event)"></button>
       </div>
-      <audio id="demo-audio" onplaying="widget.classList.add('widget_playing')" onpause="stopAudio()" onended="stopAudio()" onerror="errorAudio()"></audio>
+      <audio id="demo-audio" onplaying="widget.setStatus('playing')" onpause="widget.stopAudio()" onended="widget.stopAudio()" onerror="widget.errorAudio()"></audio>
     </div>
-  <script>
-    var widget = document.querySelector('#demo-widget');
-    var sample = document.querySelector('#demo-sample');
-    var hint = document.querySelector('#demo-hint');
-    var audio = document.querySelector('#demo-audio');
-    window.onload = generateSamples();
+    <script>
+      function Widget() {
+        this.widget_status = '';
+        this.currentSample = 0;
+        this.sample_status = 'default';
+        this.samples = [];
+        this.isPlaying = false;
+        this.elements = {
+          widget: document.querySelector('#demo-widget'),
+          select: document.querySelector('#demo-select'),
+          text_before: document.querySelector('#demo-sample-text-before'),
+          text_after: document.querySelector('#demo-sample-text-after'),
+          input: document.querySelector('#demo-sample-input'),
+          original: document.querySelector('#demo-sample-original'),
+          hint: document.querySelector('#demo-hint'),
+          play: document.querySelector('#demo-play'),
+          restore: document.querySelector('#demo-restore'),
+          audio: document.querySelector('#demo-audio'),
+        };
 
-    function selectSample(event) {
-      for (i = 1; i <= 3; i++) {
-        sample.classList.remove('sample_man-' + i);
-        sample.classList.remove('sample_woman-' + i);
-      }
-
-      sample.classList.add('sample_' + event.target.value);
-      restoreSamples();
-    }
-
-    function inputChange(event) {
-      var input = event.target;
-      widget.classList.contains('widget_generated') && setStatus('ready');
-
-      if (
-        sample.classList.contains('sample_default')
-        && !widget.classList.contains('widget_error')
-      ) {
-        sample.classList.remove('sample_default');
-        sample.classList.add('sample_modified');
-      }
-
-      if (input.value.length < 1) {
-        input.style.width = '0';
-        return;
-      }
-
-      var clone = document.createElement('pre');
-      clone.classList.add('pre-input');
-      clone.innerHTML = input.value;
-      widget.appendChild(clone);
-      input.style.width = clone.offsetWidth + 'px';
-      widget.removeChild(clone);
-
-      if (
-        input.style.width !== ''
-        && input.style.minWidth === ''
-      ) {
-        input.style.minWidth = input.style.width;
-      }
-    }
-
-    function restoreSamples() {
-      var inputEvent = document.createEvent('Event');
-      var inputs = document.querySelectorAll('.sample__input');
-      var currentSample = sample.className.match(/_\w*-\d/)[0].slice(1);
-
-      inputEvent.initEvent('input', false, false);
-
-      for (i = 0; i < inputs.length; i++) {
-        inputs[i].value = inputs[i].dataset.value;
-        inputs[i].dispatchEvent(inputEvent);
-        inputs[i].nextElementSibling.dataset.original = '';
-      }
-
-      hint.innerHTML = 'Click into the outlined section to type a correction.';
-      sample.classList.remove('sample_modified');
-      sample.classList.add('sample_default');
-
-      if (
-        widget.classList.contains('widget_generated')
-        || widget.classList.contains('widget_generating')
-      ) {
-        setStatus('ready');
-      }
-
-      loadAudio(document.querySelector('.sample__text_' + currentSample).dataset.audio, false);
-    }
-    
-    function generateSamples() {
-      setStatus('generating');
-      var get = new XMLHttpRequest();
-      get.withCredentials = true;
-      get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
-      get.responseType = 'json';
-      get.send();
-
-      get.onload = function() {
-        var select = sample.firstElementChild;
-        var response = get.response;
-
-        if (typeof response === "string") { // specially for chrome on win
-          response = JSON.parse(response);  // specially for ie
-        }
-
-        response.forEach(function (item) {
-          var text = item.text.split(item.text_to_change).map(function (part) {
-            if (part !== '') { return part.trim(); }
-          });
-
-          sample.appendChild(createSample({
-            speaker: item.speaker,
-            text: text,
-            text_to_change: item.text_to_change,
-            sample_id: item.id,
-            audio_url: item.audio_url,
-          }));
-          select.appendChild(createOption(item.speaker));
-
-          if (item.id === 0) {
-            sample.classList.add('sample_' + item.speaker.replace(' ', '-'));
-            loadAudio(item.audio_url, false);
+        this.setStatus = function(newStatus) {
+          if (this.widget_status === 'error') {
+            return;
           }
-        });
 
-        restoreSamples();
-        setStatus('ready');
-      }
-    }
+          switch (newStatus) {
+            case 'ready': {
+              this.widget_status = newStatus;
+              this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+              this.elements.widget.classList.remove('widget_generated');
+              this.elements.widget.classList.remove('widget_generating');
+              this.elements.widget.classList.add('widget_ready');
+              break;
+            }
 
-    function createSample(sampleObject) {
-      var input = document.createElement('input');
-      input.classList.add('sample__input');
-      input.addEventListener('input', inputChange);
-      input.addEventListener('focus', focusOnInput);
-      input.addEventListener('blur', blurOnInput);
-      input.type = 'text';
-      input.maxLength = 30;
-      input.setAttribute('data-value', sampleObject.text_to_change);
+            case 'generating': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.remove('widget_ready');
+              this.elements.widget.classList.add('widget_generating');
+              break;
+            }
 
-      var sampleText = document.createElement('div');
-      sampleText.classList.add('sample__text');
-      sampleText.classList.add('sample__text_' + sampleObject.speaker.replace(' ', '-'));
-      sampleText.setAttribute('data-sample', sampleObject.sample_id);
-      sampleText.setAttribute('data-audio', sampleObject.audio_url);
-      sampleText.insertAdjacentText('beforeend', sampleObject.text[0]);
-      sampleText.appendChild(input);
+            case 'generated': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.remove('widget_generating');
+              this.elements.widget.classList.add('widget_generated');
+              break;
+            }
 
-      var originalText = document.createElement('span');
-      originalText.classList.add('sample__original');
-      originalText.setAttribute('data-original', '');
-      sampleText.appendChild(originalText);
+            case 'playing': {
+              this.isPlaying = true;
+              this.elements.widget.classList.add('widget_playing');
+              break;
+            }
 
-      sampleObject.text[1] !== undefined &&
-      sampleText.insertAdjacentText('beforeend', sampleObject.text[1]);
-      return sampleText;
-    }
+            case 'paused': {
+              this.isPlaying = false;
+              this.elements.widget.classList.remove('widget_playing');
+              break;
+            }
 
-    function createOption(optionText) {
-      var option = document.createElement('option');
-      option.value = optionText.replace(' ', '-');
+            case 'error': {
+              this.widget_status = newStatus;
+              this.elements.widget.classList.add('widget_error');
+              this.elements.hint.style.display = 'block';
+              this.elements.restore.style.display = 'none';
+              this.elements.hint.innerHTML = 'Your browser isn’t supported.';
+              break;
+            }
 
-      if (optionText.match(/woman\s/)) {
-        option.insertAdjacentText('beforeend', optionText.replace(/\bwoman\s/, 'Female Sample #'));
-      } else if (optionText.match(/\bman\s/)) {
-        option.insertAdjacentText('beforeend', optionText.replace(/\bman\s/, 'Male Sample #'));
-      }
+            case 'default': {
+              this.sample_status = newStatus;
+              this.elements.widget.classList.remove('widget_modified');
+              this.elements.widget.classList.add('widget_default');
+              this.elements.hint.style.display = 'block';
+              this.elements.restore.style.display = 'none';
+              this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+              break;
+            }
 
-      return option;
-    }
+            case 'modified': {
+              this.sample_status = newStatus;
+              this.elements.widget.classList.remove('widget_default');
+              this.elements.widget.classList.add('widget_modified');
+              this.elements.hint.style.display = 'none';
+              this.elements.restore.style.display = 'flex';
+              break;
+            }
 
-    function setStatus(status) {
-      widget.classList.remove('widget_generating');
-      widget.classList.remove('widget_generated');
-      widget.classList.remove('widget_playing');
-      widget.classList.remove('widget_error');
-      widget.classList.remove('widget_ready');
-      typeof status === 'string' && widget.classList.add('widget_' + status);
-    }
+            default:
+              break;
+          }
+        };
 
-    function handleButtonClick(event) {
-      if (
-        event.button !== 0
-        || widget.classList.contains('widget_generating')
-        || widget.classList.contains('widget_error')
-      ) {
-        return;
-      }
+        this.loadAudio = function(src, play) {
+          this.isPlaying && this.setStatus('paused');
 
-      if (widget.classList.contains('widget_playing')) {
-        audio.pause();
-        return;
-      } else if (
-        widget.classList.contains('widget_generated')
-        || (
-          widget.classList.contains('widget_ready')
-          && sample.classList.contains('sample_default')
-        )
-      ) {
-        audio.play();
-        return;
-      }
+          var source = document.createElement('SOURCE');
+          var types = {
+            mp3: 'mpeg',
+            ogg: 'ogg',
+            wav: 'wav'
+          };
+          var type = types[src.match(/\w*\d*$/i)[0]];
 
-      audio.pause();
+          if (type === undefined) {
+            console.error('Unsupported audio type');
+            this.setStatus('ready');
+          }
 
-      var sampleName = sample.className.match(/_\w*-\d/)[0].slice(1);
-      var currentSample = document.querySelector('.sample__text_' + sampleName);
-      var id = parseInt(currentSample.dataset.sample);
-      var text = currentSample.firstElementChild.value;
+          source.type = 'audio/' + type;
+          source.src = src;
+          source.onerror = function () {
+            console.error('Error while loading audio at ' + src);
+          };
 
-      requestAudio(id, text);
-    }
+          this.elements.audio.innerHTML = '';
+          this.elements.audio.appendChild(source);
+          this.elements.audio.load();
 
-    function requestAudio(id, text) {
-      setStatus('generating');
-      var post = new XMLHttpRequest();
-      post.withCredentials = true;
-      post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
-      post.responseType = 'json';
-      post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      post.send(JSON.stringify({id: id, text: text}));
+          this.sample_status === 'modified' && this.setStatus('generated');
+          play && this.elements.audio.play();
+        };
 
-      post.onload = function () {
-        if (!widget.classList.contains('widget_generating')) {
-          return;
+        this.stopAudio = function () {
+          this.elements.audio.currentTime = 0;
+          this.setStatus('paused');
+        };
+
+        this.errorAudio = function () {
+          this.setStatus('error');
+          console.error('Browser isn\'t supported');
+        };
+
+        this.createOption = function (id, text) {
+          var option = document.createElement('option');
+          option.value = id;
+
+          if (text.match(/woman\s/)) {
+            option.insertAdjacentText('beforeend', text.replace(/\bwoman\s/, 'Female Sample #'));
+          } else if (text.match(/\bman\s/)) {
+            option.insertAdjacentText('beforeend', text.replace(/\bman\s/, 'Male Sample #'));
+          }
+
+          return option;
+        };
+
+        this.restoreSample = function() {
+          var inputEvent = document.createEvent('Event');
+          inputEvent.initEvent('input', false, false);
+
+          this.elements.input.value = this.elements.input.dataset.value;
+          this.elements.input.dispatchEvent(inputEvent);
+          this.elements.input.style.minWidth = this.elements.input.style.width;
+          this.elements.original.dataset.original = '';
+
+          this.setStatus('default');
+          this.setStatus('ready');
+
+          this.loadAudio(this.samples[this.currentSample].audio_url, false);
+        };
+
+        this.selectSample = function (newSampleID) {
+          this.currentSample = newSampleID;
+          this.elements.text_before.innerHTML = this.samples[this.currentSample].text_before;
+          this.samples[this.currentSample].text_after !== undefined
+            ? this.elements.text_after.innerHTML = this.samples[this.currentSample].text_after
+            : this.elements.text_after.innerHTML = '';
+          this.elements.input.setAttribute('data-value', this.samples[this.currentSample].text_to_change);
+          this.restoreSample();
+        };
+
+        this.init = function() {
+          var _this = this;
+          _this.setStatus('generating');
+          var get = new XMLHttpRequest();
+          // get.withCredentials = true;
+          // get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
+          get.open('GET', './sentences.json', true);
+          get.responseType = 'json';
+          get.send();
+
+          get.onload = function() {
+            var response = get.response;
+
+            if (typeof response === 'string') { // specially for chrome on win
+              response = JSON.parse(response);  // specially for ie
+            }
+
+            response.forEach(function (item) {
+              var text = item.text.split(item.text_to_change).map(function (part) {
+                if (part !== '') { return part.trim(); }
+              });
+
+              _this.samples.push({
+                speaker: item.speaker,
+                text_before: text[0],
+                text_after: text[1],
+                text_to_change: item.text_to_change,
+                sample_id: item.id,
+                audio_url: item.audio_url,
+              });
+              _this.elements.select.appendChild(_this.createOption(item.id, item.speaker));
+            });
+
+            _this.selectSample(0);
+            _this.restoreSample();
+          };
+
+          get.onerror = function () {
+            console.error('Error while fetching sentences');
+          };
+        };
+
+        this.inputChange = function () {
+          this.widget_status === 'generated' && this.setStatus('ready');
+
+          if (
+            this.sample_status === 'default' && this.widget_status !== 'error'
+          ) {
+            this.setStatus('modified');
+          }
+
+          if (this.elements.input.value.length < 1) {
+            this.elements.input.style.width = '0';
+            return;
+          }
+
+          var clone = document.createElement('pre');
+          clone.id = 'pre-input';
+          clone.innerHTML = this.elements.input.value;
+          this.elements.widget.appendChild(clone);
+          this.elements.input.style.width = clone.offsetWidth + 'px';
+          this.elements.widget.removeChild(clone);
+        };
+
+        this.handleButtonClick = function (event) {
+          if (
+            (
+              event.type === 'click' && event.button !== 0
+            ) || (
+              event.type === 'keypress' && event.key !== 'Enter'
+            )
+            || this.widget_status === 'generating'
+            || this.widget_status === 'error'
+          ) {
+            return;
+          }
+
+          this.elements.audio.play();
+          this.elements.audio.pause();
+          this.elements.input.blur();
+
+          if (this.isPlaying) {
+            this.elements.audio.pause();
+            return;
+          } else if (
+            this.widget_status === 'generated'
+            || (
+              this.widget_status === 'ready'
+              && this.sample_status === 'default'
+            )
+          ) {
+            this.elements.audio.play();
+            return;
+          }
+
+          this.requestAudio(this.currentSample, this.elements.input.value);
+        };
+
+        this.requestAudio = function (id, text) {
+          var _this = this;
+          _this.setStatus('generating');
+          var post = new XMLHttpRequest();
+          post.withCredentials = true;
+          post.open('POST', 'https://public.lyrebird.ai/api/public/imputation', true);
+          post.responseType = 'json';
+          post.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          post.send(JSON.stringify({id: id, text: text}));
+
+          post.onload = function () {
+            if (_this.widget_status !== 'generating') {
+              return;
+            }
+
+            var response = post.response;
+
+            if (typeof response === "string") {
+              response = JSON.parse(response);
+            }
+
+            if (response.audio_url !== null) {
+              _this.loadAudio(response.audio_url, true);
+            } else {
+              console.error('Error while fetching URL of audio at ' + post.responseURL);
+            }
+          };
+
+          post.onerror = function () {
+            console.error('Error while posting text');
+            _this.setStatus('ready');
+          }
+        };
+
+        this.focusOnInput = function () {
+          this.elements.hint.innerHTML = 'Type whatever you want.';
+
+          if (this.sample_status === 'modified') {
+            return;
+          }
+
+          this.elements.original.dataset.original = this.elements.input.dataset.value;
+          this.elements.input.value = '';
+        };
+
+        this.blurOnInput = function () {
+          this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+
+          if (this.sample_status === 'modified') {
+            return;
+          }
+
+          this.elements.input.value = this.elements.input.dataset.value;
+          this.elements.original.dataset.original = '';
         }
-
-        var response = post.response;
-
-        if (typeof response === "string") {
-          response = JSON.parse(response);
-        }
-
-        if (response.audio_url !== undefined) {
-          loadAudio(response.audio_url, true);
-        } else {
-          console.error('Error while fetching URL of audio: ' + response);
-          setStatus();
-        }
-      }
-    }
-
-    function loadAudio(src, play) {
-      widget.classList.contains('widget_playing') && widget.classList.remove('widget_playing');
-
-      var source = document.createElement('SOURCE');
-      var types = {
-        mp3: 'mpeg',
-        ogg: 'ogg',
-        wav: 'wav'
-      };
-      var type = types[src.match(/\w*\d*$/i)[0]];
-
-      if (type === undefined) { return; }
-
-      source.type = 'audio/' + type;
-      source.src = src;
-      audio.innerHTML = '';
-      audio.appendChild(source);
-      audio.load();
-      sample.classList.contains('sample_modified') && setStatus('generated');
-      play && audio.play();
-    }
-
-    function stopAudio() {
-      audio.currentTime = 0;
-      widget.classList.remove('widget_playing');
-    }
-
-    function errorAudio() {
-      hint.innerHTML = 'Your browser isn’t supported.';
-      setStatus('error');
-    }
-
-    function focusOnInput(event) {
-      var input = event.target;
-      var original = input.nextElementSibling;
-      hint.innerHTML = 'Type whatever you want.';
-
-      if (sample.classList.contains('sample_modified')) {
-        return;
       }
 
-      original.dataset.original = input.dataset.value;
-      input.value = '';
-    }
-
-    function blurOnInput(event) {
-      var input = event.target;
-      var original = input.nextElementSibling;
-      hint.innerHTML = 'Click into the outlined section to type a correction.';
-
-      if (sample.classList.contains('sample_modified')) {
-        return;
-      }
-
-      input.value = input.dataset.value;
-      original.dataset.original = '';
-    }
-  </script>
+      var widget = new Widget();
+      window.onload = widget.init();
+    </script>
   </body>
 </html>
