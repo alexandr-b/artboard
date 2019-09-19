@@ -47,7 +47,11 @@
         };
 
         this.setStatus = function(newStatus) {
-          if (this.widget_status === 'error') {
+          if (
+            this.widget_status === 'error'
+            && newStatus !== 'default'
+            && newStatus !== 'modified'
+          ) {
             return;
           }
 
@@ -260,7 +264,7 @@
 
         this.inputChange = function () {
           this.widget_status === 'generated' && this.setStatus('ready');
-          this.sample_status === 'default'&& this.setStatus('modified');
+          this.sample_status === 'default' && this.setStatus('modified');
 
           if (this.elements.input.value.length < 1) {
             this.elements.input.style.width = '0';
