@@ -89,6 +89,10 @@
 
             case 'error': {
               this.widget_status = newStatus;
+              this.elements.widget.classList.remove('widget_ready');
+              this.elements.widget.classList.remove('widget_generated');
+              this.elements.widget.classList.remove('widget_generating');
+              this.elements.widget.classList.remove('widget_playing');
               this.elements.widget.classList.add('widget_error');
               this.elements.hint.style.display = 'block';
               this.elements.restore.style.display = 'none';
@@ -100,6 +104,11 @@
               this.sample_status = newStatus;
               this.elements.widget.classList.remove('widget_modified');
               this.elements.widget.classList.add('widget_default');
+
+              if (this.widget_status === 'error') {
+                break;
+              }
+
               this.elements.hint.style.display = 'block';
               this.elements.restore.style.display = 'none';
               this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
@@ -110,6 +119,11 @@
               this.sample_status = newStatus;
               this.elements.widget.classList.remove('widget_default');
               this.elements.widget.classList.add('widget_modified');
+
+              if (this.widget_status === 'error') {
+                break;
+              }
+
               this.elements.hint.style.display = 'none';
               this.elements.restore.style.display = 'flex';
               break;
@@ -182,6 +196,10 @@
           this.elements.input.style.minWidth = this.elements.input.style.width;
           this.elements.original.dataset.original = '';
 
+          if (this.widget_status === 'error') {
+            return;
+          }
+
           this.setStatus('default');
           this.setStatus('ready');
 
@@ -242,12 +260,7 @@
 
         this.inputChange = function () {
           this.widget_status === 'generated' && this.setStatus('ready');
-
-          if (
-            this.sample_status === 'default' && this.widget_status !== 'error'
-          ) {
-            this.setStatus('modified');
-          }
+          this.sample_status === 'default'&& this.setStatus('modified');
 
           if (this.elements.input.value.length < 1) {
             this.elements.input.style.width = '0';
@@ -331,7 +344,10 @@
         };
 
         this.focusOnInput = function () {
-          this.elements.hint.innerHTML = 'Type whatever you want.';
+          if (this.widget_status !== 'error') {
+            this.elements.hint.innerHTML = 'Type whatever you want.';
+          }
+
 
           if (this.sample_status === 'modified') {
             return;
@@ -342,7 +358,10 @@
         };
 
         this.blurOnInput = function () {
-          this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+          if (this.widget_status !== 'error') {
+            this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
+          }
+
 
           if (this.sample_status === 'modified') {
             return;
