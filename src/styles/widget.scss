@@ -181,20 +181,13 @@
   }
 
   #demo-sample-original {
-    &:after {
-      content: attr(data-original);
-      margin: 0 5px;
-      display: inline;
-      background-color: rgba(#000, .05);
-      color: rgba(#000, .4);
-      text-decoration: line-through solid rgba(#000, .3);
-      text-decoration-thickness: 1px;
-      cursor: inherit;
-    }
-
-    &[data-original='']:after {
-      display: none;
-    }
+    background-color: rgba(#000, .05);
+    color: rgba(#000, .4);
+    text-decoration: line-through;
+    text-decoration-color: rgba(#000, .3);
+    text-decoration-style: solid;
+    text-decoration-thickness: 1px;
+    cursor: inherit;
   }
 
   #demo-controls {
