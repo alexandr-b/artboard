@@ -13,7 +13,7 @@
         <select id="demo-select" onchange="widget.selectSample(parseInt(this.value))"></select>
         <div id="demo-sample-text">
           <span id="demo-sample-text-before"></span>
-          <input id="demo-sample-input" type="text" maxlength="30" oninput="widget.inputChange()" onfocus="widget.focusOnInput()" onblur="widget.blurOnInput()" onkeypress="widget.handleButtonClick(event)">
+          <input id="demo-sample-input" type="text" maxlength="30" oninput="widget.inputChange()" onfocus="widget.focusOnInput()" onblur="widget.blurOnInput()" onkeydown="widget.playSample(event)">
           <span id="demo-sample-original"></span>
           <span id="demo-sample-text-after"></span>
         </div>
@@ -22,7 +22,7 @@
       <div id="demo-controls">
         <p id="demo-hint"></p>
         <button id="demo-restore" onclick="widget.restoreSample()"></button>
-        <button id="demo-play" onclick="widget.handleButtonClick(event)"></button>
+        <button id="demo-play" onclick="widget.playSample(event)"></button>
       </div>
       <audio id="demo-audio" onplaying="widget.setStatus('playing')" onpause="widget.stopAudio()" onended="widget.stopAudio()" onerror="widget.errorAudio()"></audio>
     </div>
@@ -57,25 +57,10 @@
 
           switch (newStatus) {
             case 'ready': {
+              this.elements.widget.classList.remove('widget_' + this.widget_status);
               this.widget_status = newStatus;
+              this.elements.widget.classList.add('widget_' + this.widget_status);
               this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
-              this.elements.widget.classList.remove('widget_generated');
-              this.elements.widget.classList.remove('widget_generating');
-              this.elements.widget.classList.add('widget_ready');
-              break;
-            }
-
-            case 'generating': {
-              this.widget_status = newStatus;
-              this.elements.widget.classList.remove('widget_ready');
-              this.elements.widget.classList.add('widget_generating');
-              break;
-            }
-
-            case 'generated': {
-              this.widget_status = newStatus;
-              this.elements.widget.classList.remove('widget_generating');
-              this.elements.widget.classList.add('widget_generated');
               break;
             }
 
@@ -92,12 +77,9 @@
             }
 
             case 'error': {
+              this.elements.widget.classList.remove('widget_' + this.widget_status);
               this.widget_status = newStatus;
-              this.elements.widget.classList.remove('widget_ready');
-              this.elements.widget.classList.remove('widget_generated');
-              this.elements.widget.classList.remove('widget_generating');
-              this.elements.widget.classList.remove('widget_playing');
-              this.elements.widget.classList.add('widget_error');
+              this.elements.widget.classList.add('widget_' + this.widget_status);
               this.elements.hint.style.display = 'block';
               this.elements.restore.style.display = 'none';
               this.elements.hint.innerHTML = 'Your browser isn’t supported.';
@@ -115,6 +97,11 @@
 
               this.elements.hint.style.display = 'block';
               this.elements.restore.style.display = 'none';
+
+              if (this.elements.input.value === '') {
+                break;
+              }
+
               this.elements.hint.innerHTML = 'Click into the outlined section to type a correction.';
               break;
             }
@@ -133,8 +120,12 @@
               break;
             }
 
-            default:
+            default: {
+              this.elements.widget.classList.remove('widget_' + this.widget_status);
+              this.widget_status = newStatus;
+              this.elements.widget.classList.add('widget_' + this.widget_status);
               break;
+            }
           }
         };
 
@@ -225,9 +216,8 @@
           var _this = this;
           _this.setStatus('generating');
           var get = new XMLHttpRequest();
-          // get.withCredentials = true;
-          // get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
-          get.open('GET', './sentences.json', true);
+          get.withCredentials = true;
+          get.open('GET', 'https://public.lyrebird.ai/api/public/sentences', true);
           get.responseType = 'json';
           get.send();
 
@@ -267,8 +257,9 @@
           this.widget_status === 'generated' && this.setStatus('ready');
           this.sample_status === 'default' && this.setStatus('modified');
 
-          if (this.elements.input.value.length < 1) {
+          if (this.elements.input.value === '') {
             this.elements.input.style.width = '0';
+            this.setStatus('default');
             return;
           }
 
@@ -280,13 +271,10 @@
           this.elements.widget.removeChild(clone);
         };
 
-        this.handleButtonClick = function (event) {
+        this.playSample = function (event) {
           if (
-            (
-              event.type === 'click' && event.button !== 0
-            ) || (
-              event.type === 'keypress' && event.key !== 'Enter'
-            )
+            (event.type === 'click' && event.button !== 0)
+            || (event.type === 'keydown' && event.key !== 'Enter')
             || this.widget_status === 'generating'
             || this.widget_status === 'error'
           ) {
@@ -335,10 +323,11 @@
               response = JSON.parse(response);
             }
 
-            if (response.audio_url !== null) {
+            if (response !== null && response.audio_url !== null) {
               _this.loadAudio(response.audio_url, true);
             } else {
-              console.error('Error while fetching URL of audio at ' + post.responseURL);
+              console.error('Error while fetching URL of audio');
+              _this.setStatus('ready');
             }
           };
 
