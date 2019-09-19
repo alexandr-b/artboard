@@ -275,11 +275,14 @@
   &.widget_generating {
     #demo-sample-input {
       background-image: url('./assets/svg/barber.svg');
+      background-origin: content-box;
+      background-repeat: repeat-x;
+      background-size: 34px 34px;
       animation: b 1s linear infinite;
 
       @keyframes b {
-        0% { background-position: 0 0 }
-        to { background-position: 36px 0 }
+        0% { background-position-x: 0 }
+        to { background-position-x: 34px }
       }
     }
 
