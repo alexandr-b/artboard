@@ -1,9 +1,322 @@
-body {
-  margin: 0;
-  padding: 0 20px;
-  min-width: 320px;
+:root {
+  // overdub pink:
+  --accent: 222, 40, 152;
+  // lyrebird blue:
+  //--accent: 0, 98, 255;
+}
+
+#overdub-demo {
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  max-width: 977px;
   box-sizing: border-box;
-  height: 100vh;
+  overflow: hidden;
   display: flex;
-  align-items: center;
+  flex-flow: column;
+  background-color: #fff;
+  border: 1px solid rgba(#000, .2);
+  border-radius: 10px;
+  box-shadow: 0 5px 8px rgba(#000, .1);
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+
+  .overflow-hidden {
+    overflow: hidden !important;
+  }
+
+  p,
+  hr,
+  div,
+  select,
+  button,
+  textarea {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+    text-decoration: none;
+  }
+
+  select {
+    cursor: pointer;
+
+    &:focus:-moz-focusring {
+      color: transparent;
+      text-shadow: 0 0 0 #000;
+    }
+
+    &::-ms-expand {
+      display: none;
+    }
+
+    & option {
+      font-weight: normal;
+    }
+  }
+
+  input,
+  input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+
+    &::-ms-clear {
+      display: none;
+    }
+  }
+
+  hr {
+    width: 100%;
+    height: 1px;
+    background-image: url('../assets/svg/dash.svg');
+    background-position: bottom left;
+    background-repeat: repeat-x;
+    background-size: 12px 1px;
+    border: 0;
+    outline: 0;
+  }
+
+  label {
+    user-select: none;
+  }
+
+  button {
+    background: none;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    transition: transform .1s;
+
+    &:active {
+      transform: translate(.5px, .5px);
+    }
+  }
+
+  #overdub-content {
+    margin: 19px 19px 24px;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    #overdub-select {
+      padding-left: 5px;
+      padding-right: 22px;
+      margin-bottom: 11px;
+      min-width: 152px;
+      height: 28px;
+      background-color: #fff;
+      background-image: url('../assets/svg/drop-select.svg');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: auto, 100%;
+      border: 1px solid rgba(#000, .15);
+      border-radius: 4px;
+      outline: 0;
+      box-shadow: none;
+      color: #000;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 16px;
+      letter-spacing: .06px;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      appearance: none;
+
+      &:hover {
+        border-color: rgba(#000, .3);
+      }
+
+      &:focus {
+        border-color: rgba(#000, .5);
+      }
+    }
+
+    #overdub-sample {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+
+      #overdub-text,
+      #overdub-input {
+        width: 100%;
+        min-height: 72px;
+        color: #000;
+        font-size: 22px;
+        font-weight: 200;
+        line-height: 36px;
+        letter-spacing: .99px;
+        word-spacing: .4px;
+      }
+
+      #overdub-text {
+        visibility: hidden;
+        position: absolute;
+        left: 0;
+        top: 0;
+        word-break: break-all;
+      }
+
+      #overdub-input {
+        height: 100%;
+        max-height: 360px;
+        border: none;
+        resize: none;
+        overflow: hidden auto;
+        transition: height .25s;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+
+  #overdub-controls {
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+
+    #overdub-hint {
+      margin-right: 23px;
+      display: block;
+      color: rgba(#000, .4);
+      font-size: 17px;
+      font-weight: inherit;
+      letter-spacing: normal;
+      line-height: 36px;
+      cursor: default;
+    }
+
+    #overdub-play {
+      min-width: 137px;
+      height: 48px;
+      justify-content: center;
+      background-color: #DE2898;
+      background-color: RGB(var(--accent));
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+
+      &:before {
+        content: '';
+        position: relative;
+        display: block;
+        width: 30px;
+        height: 30px;
+        background-image: url('../assets/svg/generating.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: auto;
+        animation: r 1s linear infinite;
+      }
+
+      &:after {
+        position: relative;
+        display: block;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 600;
+        line-height: 23px;
+        letter-spacing: -.25px;
+      }
+
+      @keyframes r {
+        0% {
+          transform: rotate(-1deg);
+        }
+
+        to {
+          transform: rotate(359deg);
+        }
+      }
+    }
+  }
+
+  &.ready,
+  &.generated,
+  &.generating {
+    #overdub-controls {
+      #overdub-play {
+        padding: 0 28px 0 14px;
+
+        &:before {
+          background-image: url('../assets/svg/play.svg');
+          animation: none;
+        }
+
+        &:after {
+          content: 'Speak it';
+        }
+      }
+    }
+  }
+
+  &.generating {
+    #overdub-controls {
+      #overdub-play {
+        background-image: url('../assets/svg/barber.svg');
+        background-origin: content-box;
+        background-repeat: repeat-x;
+        background-size: 36px 100%;
+        animation: b 1s linear infinite;
+
+        &:before {
+          animation: none;
+        }
+
+        @keyframes b {
+          0% {
+            background-position-x: 0
+          }
+          to {
+            background-position-x: 36px
+          }
+        }
+      }
+    }
+  }
+
+  &.playing {
+    #overdub-controls {
+      #overdub-play {
+        &:before {
+          width: 20px;
+          height: 18px;
+          background-image: url('../assets/svg/playing.svg');
+          animation: none;
+        }
+      }
+    }
+  }
+
+  &.error {
+    #overdub-controls {
+      #overdub-play {
+        &:before {
+          width: 20px;
+          height: 18px;
+          background-image: url('../assets/svg/error.svg');
+          animation: none;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  #overdub-demo {
+    #overdub-controls {
+      flex-direction: column;
+      align-items: center;
+
+      #overdub-hint {
+        margin: 4px 0 20px;
+      }
+    }
+  }
 }

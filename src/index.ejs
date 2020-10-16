@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>overdub widget</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0 20px;
+        min-width: 320px;
+        box-sizing: border-box;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overdub-demo">
+      <div id="overdub-content">
+        <select id="overdub-select"></select>
+        <div id="overdub-sample">
+          <div id="overdub-text"></div>
+          <textarea id="overdub-input" maxlength="500"></textarea>
+        </div>
+      </div>
+      <hr />
+      <div id="overdub-controls">
+        <p id="overdub-hint"></p>
+        <button id="overdub-play"></button>
+      </div>
+      <audio id="overdub-audio"></audio>
+    </div>
+  </body>
+</html>
